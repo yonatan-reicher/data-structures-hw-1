@@ -4,7 +4,7 @@
 #include <memory>
 
 template <class T>
-struct Node;
+class Node;
 
 // These are functions that cannot be methods because they can be called on a nullptr
 
@@ -33,11 +33,12 @@ int balance(const Node<T>* root) {
 }
 
 template <class T>
-struct Node {
+class Node {
     std::unique_ptr<Node> m_left;
     std::unique_ptr<Node> m_right;
     int m_height;
     int m_count;
+public:
     int key;
     T data;
 
@@ -49,10 +50,44 @@ struct Node {
         updateHeightAndCount();
     }
 
+    std::unique_ptr<Node> setLeft(std::unique_ptr<Node> newLeft) {
+        std::unique_ptr<Node> ret = std::move(m_left);
+        m_left = std::move(newLeft);
+        updateHeightAndCount();
+        return std::move(ret);
+    }
+
+    std::unique_ptr<Node> setRight(std::unique_ptr<Node> newRight) {
+        std::unique_ptr<Node> ret = std::move(m_right);
+        m_right = std::move(newRight);
+        updateHeightAndCount();
+        return std::move(ret);
+    }
+
+    std::unique_ptr<Node> popLeft() {
+        return setLeft(nullptr);
+    }
+
+    std::unique_ptr<Node> popRight() {
+        return setRight(nullptr);
+    }
+
+    const std::unique_ptr<Node>& getLeft() const {
+        return m_left;
+    }
+
+    const std::unique_ptr<Node>& getRight() const {
+        return m_right;
+    }
+
+private:
     void updateHeightAndCount() {
         m_height = 1 + std::max(height(m_left.get()), height(m_right.get()));
         m_count = 1 + count(m_left.get()) + count(m_right.get());
     }
+
+    friend int height(const Node<T>*);
+    friend int count(const Node<T>*);
 };
 
 #endif
