@@ -117,6 +117,65 @@ T& btGet(Node<T>* root, int key) {
 }
 
 template <class T>
+void rotate(std::unique_ptr<Node<T>>& root, bool right) {
+    assert(root != nullptr);
+    assert(root->getLeft() != nullptr && root->getRight() != nullptr);
+    std::unique_ptr<Node<T>> bRef = right ? root->getLeft() : root->getRight();
+    assert(bRef->getLeft() != nullptr && bRef->getRight() != nullptr);
+
+    // This is the action we want to perform:
+    /*        A    right   B
+     *       / \    ==>   / \
+     *      B   C   <==  D   A
+     *     / \     left     / \
+     *    D   E            E   C
+     */
+
+    // Here we use the names from the diagram above (of the right rotation).
+    std::unique_ptr<Node<T>> a = std::move(root);
+    std::unique_ptr<Node<T>> b = right ? a->popLeft() : a->popRight();
+    std::unique_ptr<Node<T>> e = right ? b->popRight() : b->popLeft();
+    // C and D are not needed.
+
+    // Now we reassemble the tree. Must go from bottom to top because of moves.
+    if (right) {
+        a->setLeft(std::move(e));
+        b->setRight(std::move(a));
+        root = std::move(b);
+    } else {
+        a->setRight(std::move(e));
+        b->setLeft(std::move(a));
+        root = std::move(b);
+    }
+}
+
+template <class T>
+void rotateLLOrRR(std::unique_ptr<Node<T>>& root, bool ll) {
+    // This is just a single rotation.
+    rotate(root, ll);
+}
+
+template <class T>
+void rotateLROrRL(std::unique_ptr<Node<T>>& root, bool lr) {
+    /* This is a double rotation.
+     *      A             E
+     *     / \    LR     / \
+     *    B   C   ==>   B   A
+     *   / \       ^   / \ / \
+     *  D   E      |  D  F G  C
+     *     / \     |   
+     *    F   G    --- This is a left rotation on B then right rotation on A.
+     */
+
+    std::unique_ptr<Node<T>> child = lr ? root->popLeft() : root->popRight();
+    rotate(child, !lr);
+    if (lr) root->setLeft(std::move(child));
+    else root->setRight(std::move(child));
+
+    rotate(root, lr);
+}
+
+template <class T>
 T& avlInsert(std::unique_ptr<Node<T>>& root, int key, T data) {
     T& dataReference = btInsert(root, key, std::move(data));
 
