@@ -269,21 +269,27 @@ private:
     using Node = Node<T>;
 
     std::unique_ptr<Node> root;
+    int m_size;
 
 public:
     Tree() {
         root = nullptr;
+        m_size = 0;
     }
     virtual ~Tree() {
         root = nullptr;
     }
 
     T& insert(int key, T data) {
-        return avlInsert(root, key, data);
+        T& dataReference = avlInsert(root, key, data);
+        m_size++; // Must happen after the insert so we don't count failed calls.
+        return dataReference;
     }
 
     T remove(int key) {
-        return avlRemove(root, key);
+        T data = avlRemove(root, key);
+        m_size--; // Must happen after the remove so we don't count failed calls.
+        return data;
     }
 
     T& get(int key) {
@@ -299,7 +305,7 @@ public:
     }
 
     int size() const {
-        return count(root);
+        return m_size;
     }
 
     friend auto operator<<(std::ostream& os, const Tree& tree) -> std::ostream& { 

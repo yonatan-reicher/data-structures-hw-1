@@ -17,14 +17,6 @@ int height(const std::unique_ptr<Node<T>>& root) {
 }
 
 template <class T>
-int count(const std::unique_ptr<Node<T>>& root) {
-    if (root == nullptr) {
-        return 0;
-    }
-    return root->m_count;
-}
-
-template <class T>
 int balanceFactor(const std::unique_ptr<Node<T>>& root) {
     if (root == nullptr) {
         return 0;
@@ -37,7 +29,6 @@ class Node {
     std::unique_ptr<Node> m_left;
     std::unique_ptr<Node> m_right;
     int m_height;
-    int m_count;
 public:
     int key;
     T data;
@@ -47,20 +38,20 @@ public:
         this->data = std::move(data);
         m_left = nullptr;
         m_right = nullptr;
-        updateHeightAndCount();
+        updateHeight();
     }
 
     std::unique_ptr<Node> setLeft(std::unique_ptr<Node> newLeft) {
         std::unique_ptr<Node> ret = std::move(m_left);
         m_left = std::move(newLeft);
-        updateHeightAndCount();
+        updateHeight();
         return ret;
     }
 
     std::unique_ptr<Node> setRight(std::unique_ptr<Node> newRight) {
         std::unique_ptr<Node> ret = std::move(m_right);
         m_right = std::move(newRight);
-        updateHeightAndCount();
+        updateHeight();
         return ret;
     }
 
@@ -81,15 +72,12 @@ public:
     }
 
 private:
-    void updateHeightAndCount() {
+    void updateHeight() {
         m_height = 1 + std::max(height(m_left), height(m_right));
-        m_count = 1 + count(m_left) + count(m_right);
     }
 
     template <class U>
     friend int height(const std::unique_ptr<Node<U>>&);
-    template <class U>
-    friend int count(const std::unique_ptr<Node<U>>&);
     template <class U>
     friend int balanceFactor(const std::unique_ptr<Node<U>>&);
 };
