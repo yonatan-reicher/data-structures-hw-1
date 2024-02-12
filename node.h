@@ -9,7 +9,7 @@ class Node;
 // These are functions that cannot be methods because they can be called on a nullptr
 
 template <class T>
-int height(const Node<T>* root) {
+int height(const std::unique_ptr<Node<T>>& root) {
     if (root == nullptr) {
         return 0;
     }
@@ -17,7 +17,7 @@ int height(const Node<T>* root) {
 }
 
 template <class T>
-int count(const Node<T>* root) {
+int count(const std::unique_ptr<Node<T>>& root) {
     if (root == nullptr) {
         return 0;
     }
@@ -25,11 +25,11 @@ int count(const Node<T>* root) {
 }
 
 template <class T>
-int balance(const Node<T>* root) {
+int balanceFactor(const std::unique_ptr<Node<T>>& root) {
     if (root == nullptr) {
         return 0;
     }
-    return height(root->m_left.get()) - height(root->m_right.get());
+    return height(root->m_left) - height(root->m_right);
 }
 
 template <class T>
@@ -82,14 +82,16 @@ public:
 
 private:
     void updateHeightAndCount() {
-        m_height = 1 + std::max(height(m_left.get()), height(m_right.get()));
-        m_count = 1 + count(m_left.get()) + count(m_right.get());
+        m_height = 1 + std::max(height(m_left), height(m_right));
+        m_count = 1 + count(m_left) + count(m_right);
     }
 
     template <class U>
-    friend int height(const Node<U>*);
+    friend int height(const std::unique_ptr<Node<U>>&);
     template <class U>
-    friend int count(const Node<U>*);
+    friend int count(const std::unique_ptr<Node<U>>&);
+    template <class U>
+    friend int balanceFactor(const std::unique_ptr<Node<U>>&);
 };
 
 #endif

@@ -12,6 +12,9 @@ struct NotFoundException : public std::exception {
     }
 };
 
+template <class T>
+auto operator<<(std::ostream& os, const std::unique_ptr<Node<T>>& node) -> std::ostream&;
+
 // Functions marked with "bt" are binary tree functions.
 // Functions marked with "avl" are AVL tree functions.
 
@@ -120,7 +123,7 @@ template <class T>
 void rotate(std::unique_ptr<Node<T>>& root, bool right) {
     assert(root != nullptr);
     assert(root->getLeft() != nullptr && root->getRight() != nullptr);
-    std::unique_ptr<Node<T>> bRef = right ? root->getLeft() : root->getRight();
+    const std::unique_ptr<Node<T>>& bRef = right ? root->getLeft() : root->getRight();
     assert(bRef->getLeft() != nullptr && bRef->getRight() != nullptr);
 
     // This is the action we want to perform:
@@ -175,13 +178,89 @@ void rotateLROrRL(std::unique_ptr<Node<T>>& root, bool lr) {
     rotate(root, lr);
 }
 
+enum class RebalanceType {
+    LL, RR, LR, RL, NONE
+};
+
+RebalanceType chooseRebalanceByBalanceFactor( int atRoot, int atLeft, int atRight) {
+    assert(-2 <= atRoot && atRoot <= 2);
+    assert(-1 <= atLeft && atLeft <= 1);
+    assert(-1 <= atRight && atRight <= 1);
+
+    if (atRoot == 2 && atLeft > -1) return RebalanceType::LL;
+    if (atRoot == 2 && atLeft == -1) return RebalanceType::LR;
+    if (atRoot == -2 && atRight < 1) return RebalanceType::RR;
+    if (atRoot == -2 && atRight == 1) return RebalanceType::RL;
+    return RebalanceType::NONE;
+}
+
+// Returns true iff the tree was rebalanced.
+template <class T>
+bool rebalanceRoot(std::unique_ptr<Node<T>>& root) {
+    if (root == nullptr) {
+        return false;
+    }
+
+    int atRoot = balanceFactor(root);
+    int atLeft = balanceFactor(root->getLeft());
+    int atRight = balanceFactor(root->getRight());
+
+    switch (chooseRebalanceByBalanceFactor(atRoot, atLeft, atRight)) {
+        case RebalanceType::LL:
+            rotateLLOrRR(root, true);
+            return true;
+        case RebalanceType::RR:
+            rotateLLOrRR(root, false);
+            return true;
+        case RebalanceType::LR:
+            rotateLROrRL(root, true);
+            return true;
+        case RebalanceType::RL:
+            rotateLROrRL(root, false);
+            return true;
+        case RebalanceType::NONE:
+            return false;
+        default:
+            throw std::exception();
+    }
+}
+
+template <class T>
+bool rebalanceBranch(std::unique_ptr<Node<T>>& root, int pathKey, bool once) {
+    if (root == nullptr) {
+        return false;
+    }
+
+    bool rightChild = pathKey > root->key;
+    std::unique_ptr<Node<T>> next = rightChild ? root->popRight() : root->popLeft();
+
+    bool rebalanced = rebalanceBranch(next, pathKey, once);
+    if (!rebalanced || !once) {
+        rebalanced = rebalanceRoot(next);
+    }
+
+    if (rightChild) root->setRight(std::move(next));
+    else root->setLeft(std::move(next));
+
+    return rebalanced;
+}
+
 template <class T>
 T& avlInsert(std::unique_ptr<Node<T>>& root, int key, T data) {
     T& dataReference = btInsert(root, key, std::move(data));
 
-    rebalanceAt(root, key);
+    rebalanceBranch(root, key, true);
 
     return dataReference;
+}
+
+template <class T>
+T avlRemove(std::unique_ptr<Node<T>>& root, int key) {
+    T data = btRemove(root, key);
+
+    rebalanceBranch(root, key, false);
+
+    return data;
 }
 
 template <class T>
@@ -200,11 +279,11 @@ public:
     }
 
     T& insert(int key, T data) {
-        return btInsert(root, key, data);
+        return avlInsert(root, key, data);
     }
 
     T remove(int key) {
-        return btRemove(root, key);
+        return avlRemove(root, key);
     }
 
     T& get(int key) {
@@ -220,54 +299,16 @@ public:
     }
 
     int size() const {
-        return count(root.get());
-    }
-
-private:
-    // Rebalance the tree after making a change at a given key.
-    bool rebalanceAt(int pathKey) {
-        return rebalanceAt(root, pathKey);
-    }
-
-    bool rebalanceAtHelper(Node& root, int pathKey) {
-        // Recurse down. If a rebalance already happened, don't do more.
-        // (another one won't happen)
-        Node& next = root.key > pathKey ? root.m_left : root.m_right;
-        if (rebalanceAtHelper(next, pathKey)) return true;
-
-        if (root.m_left == nullptr || root.m_right == nullptr) return false;
-        int balanceFactor = height(root.m_left) - height(root.m_right);
-        int leftBalanceFactor = height(root.m_left->left) - height(root.m_left->right);
-        int rightBalanceFactor = height(root.m_right->left) - height(root.m_right->right);
-
-        return dispatchRebalance(balanceFactor, leftBalanceFactor, rightBalanceFactor);
-    }
-
-    bool dispatchRebalance(int atRoot, int atLeft, int atRight) {
-        assert(-2 <= atRoot && atRoot <= 2);
-        assert(-1 <= atLeft && atLeft <= 1);
-        assert(-1 <= atRight && atRight <= 1);
-
-        if (atRoot != 2 && atRoot != -2) {
-            return false;
-        }
-
-        /*
-        if (atRoot == 2 && atLeft > -1) ll();
-        if (atRoot == 2 && atLeft == -1) lr();
-        if (atRoot == -2 && atRight < 1) rr();
-        if (atRoot == -2 && atRight == 1) rl();
-        */
-        return false;
+        return count(root);
     }
 
     friend auto operator<<(std::ostream& os, const Tree& tree) -> std::ostream& { 
-        return os << tree.root.get();
+        return os << tree.root;
     }
 };
 
 template <class T>
-auto operator<<(std::ostream& os, const Node<T>* node) -> std::ostream& { 
+auto operator<<(std::ostream& os, const std::unique_ptr<Node<T>>& node) -> std::ostream& { 
     os << '[';
     
     if (node->getLeft() != nullptr) {
