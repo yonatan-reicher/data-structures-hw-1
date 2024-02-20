@@ -32,12 +32,12 @@ T& btInsert(std::unique_ptr<Node<T>>& root, int key, T data) {
 
     if (key < root->key) {
         std::unique_ptr<Node<T>> left = root->popLeft();
-        T& ret = btInsert(left, key, data);
+        T& ret = btInsert(left, key, std::move(data));
         root->setLeft(std::move(left));
         return ret;
     } else {
         std::unique_ptr<Node<T>> right = root->popRight();
-        T& ret = btInsert(right, key, data);
+        T& ret = btInsert(right, key, std::move(data));
         root->setRight(std::move(right));
         return ret;
     }
@@ -122,9 +122,8 @@ T& btGet(Node<T>* root, int key) {
 template <class T>
 void rotate(std::unique_ptr<Node<T>>& root, bool right) {
     assert(root != nullptr);
-    assert(root->getLeft() != nullptr && root->getRight() != nullptr);
     const std::unique_ptr<Node<T>>& bRef = right ? root->getLeft() : root->getRight();
-    assert(bRef->getLeft() != nullptr && bRef->getRight() != nullptr);
+    assert(bRef != nullptr);
 
     // This is the action we want to perform:
     /*        A    right   B
@@ -235,12 +234,13 @@ bool rebalanceBranch(std::unique_ptr<Node<T>>& root, int pathKey, bool once) {
     std::unique_ptr<Node<T>> next = rightChild ? root->popRight() : root->popLeft();
 
     bool rebalanced = rebalanceBranch(next, pathKey, once);
-    if (!rebalanced || !once) {
-        rebalanced = rebalanceRoot(next);
-    }
 
     if (rightChild) root->setRight(std::move(next));
     else root->setLeft(std::move(next));
+
+    if (!rebalanced || !once) {
+        rebalanced = rebalanceRoot(root);
+    }
 
     return rebalanced;
 }
@@ -281,7 +281,7 @@ public:
     }
 
     T& insert(int key, T data) {
-        T& dataReference = avlInsert(root, key, data);
+        T& dataReference = avlInsert(root, key, std::move(data));
         m_size++; // Must happen after the insert so we don't count failed calls.
         return dataReference;
     }
@@ -317,16 +317,16 @@ template <class T>
 auto operator<<(std::ostream& os, const std::unique_ptr<Node<T>>& node) -> std::ostream& { 
     os << '[';
     
-    if (node->getLeft() != nullptr) {
-        os << node->getLeft().get();
-    }
+    if (node) {
+        if (node->getLeft() != nullptr) {
+            os << node->getLeft();
+        }
 
-    if (node != nullptr) {
         os << node->key << ":" << node->data;
-    }
 
-    if (node->getRight() != nullptr) {
-        os << node->getRight().get();
+        if (node->getRight() != nullptr) {
+            os << node->getRight();
+        }
     }
 
     return os << ']';
