@@ -1,0 +1,6 @@
+# ninja log v5
+1	12	0	clean	51ec05efbde4e425
+431	644	7304200354891855	data_structures_hw1.exe	6e65294f1c22a31
+0	635	7304198480970755	CMakeFiles/data_structures_hw1.dir/maina1.cpp.obj	31e50c98bb3a80cf
+1	328	7304214628988373	build.ninja	5043d00bd7b40a2b
+4	430	7304200352906642	CMakeFiles/data_structures_hw1.dir/Olympicsa1.cpp.obj	e9020031ef59ee0f

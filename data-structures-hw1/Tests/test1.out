@@ -1,0 +1,21 @@
+add_country: SUCCESS
+add_country: SUCCESS
+add_team: SUCCESS
+remove_country: FAILURE
+add_team: FAILURE
+add_team: SUCCESS
+get_medals: SUCCESS, 6
+get_medals: SUCCESS, 10
+play_match: SUCCESS
+get_medals: SUCCESS, 6
+add_contestant: SUCCESS
+add_contestant: SUCCESS
+add_contestant: SUCCESS
+add_contestant_to_team: SUCCESS
+add_contestant_to_team: SUCCESS
+add_contestant_to_team: SUCCESS
+play_match: SUCCESS
+get_medals: SUCCESS, 6
+update_contestant_strength: SUCCESS
+play_match: SUCCESS
+get_medals: SUCCESS, 7
