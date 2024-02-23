@@ -60,7 +60,7 @@ std::unique_ptr<Node<T>> popRightmost(std::unique_ptr<Node<T>>& node) {
 }
 
 template <class T>
-T btRemove(std::unique_ptr<Node<T>>& root, int key) {
+T btRemove(std::unique_ptr<Node<T>>& root, int key, int* keyOfSwitched) {
     if (root == nullptr) {
         throw NotFoundException();
     }
@@ -89,14 +89,17 @@ T btRemove(std::unique_ptr<Node<T>>& root, int key) {
         root = std::move(rightmost);
         root->setLeft(std::move(left));
         root->setRight(std::move(right));
+        if (keyOfSwitched != nullptr) {
+            *keyOfSwitched = root->key;
+        }
         return root->data;
     } else if (key < root->key) {
         std::unique_ptr<Node<T>> left = root->popLeft();
-        result = btRemove(left, key);
+        result = btRemove(left, key, keyOfSwitched);
         root->setLeft(std::move(left));
     } else {
         std::unique_ptr<Node<T>> right = root->popRight();
-        result = btRemove(right, key);
+        result = btRemove(right, key, keyOfSwitched);
         root->setRight(std::move(right));
     }
     return std::move(result);
@@ -255,10 +258,43 @@ T& avlInsert(std::unique_ptr<Node<T>>& root, int key, T data) {
 }
 
 template <class T>
-T avlRemove(std::unique_ptr<Node<T>>& root, int key) {
-    T data = btRemove(root, key);
+int getRightmostKey(const std::unique_ptr<Node<T>>& root) {
+    assert(root != nullptr);
+    if (root->getRight() == nullptr) {
+        return root->key;
+    }
+    return getRightmostKey(root->getRight());
+}
 
-    rebalanceBranch(root, key, false);
+template <class T>
+int getAvlRemoveRebalancePath(const std::unique_ptr<Node<T>>& root, int key) {
+    if (root == nullptr) return key;
+
+    if (key == root->key) {
+        if (root->getLeft() != nullptr) {
+            return getRightmostKey(root->getLeft());
+        } else {
+            return root->key;
+        }
+    }
+    if (key < root->key) {
+        return getAvlRemoveRebalancePath(root->getLeft(), key);
+    } else {
+        return getAvlRemoveRebalancePath(root->getRight(), key);
+    }
+}
+
+template <class T>
+T avlRemove(std::unique_ptr<Node<T>>& root, int key) {
+    std::cout << "Removing " << key << std::endl;
+    std::cout << "Before:          " << root << std::endl;
+    int pathKey = key;
+    T data = btRemove(root, key, &pathKey);
+    std::cout << "After remove:    " << root << std::endl;
+
+    pathKey = getAvlRemoveRebalancePath(root, pathKey);
+    rebalanceBranch(root, pathKey, false);
+    std::cout << "After rebalance: " << root << std::endl;
 
     return data;
 }
