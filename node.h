@@ -11,7 +11,7 @@ class Node;
 template <class T>
 int height(const std::unique_ptr<Node<T>>& root) {
     if (root == nullptr) {
-        return -1;
+        return 0;
     }
     return root->m_height;
 }

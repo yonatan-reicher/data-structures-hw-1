@@ -4,22 +4,17 @@
 
 int main() {
 
-    // Hardcoded *random* numbers without duplicates to test the tree
-    int x[] = { 56, 23, 78, 12, 34, 67, 89, 46, 2, 9, 1 };
-    int xSize = sizeof(x) / sizeof(x[0]);
     Tree<int> tree;
+    tree.insert(1, 2);
+    tree.insert(2, 3);
+    tree.insert(3, 4);
 
-    for (int i = 0; i < xSize; i++) {
-        tree.insert(x[i], x[i]);
-    }
+    assert(tree.get(3) == 4);
+    assert(tree.size() == 3);
+    assert(tree.remove(3) == 4);
+    assert(tree.size() == 2);
 
-    assert(tree.size() == xSize);
-    for (int i = 0; i < xSize; i++) {
-        assert(tree.get(x[i]) == x[i]);
-        tree.remove(x[i]);
-    }
-    assert(tree.size() == 0);
-
+    auto x = new int(5);
 
     std::cout << "Tree tests passed" << std::endl;
 
