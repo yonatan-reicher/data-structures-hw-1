@@ -315,6 +315,46 @@ const std::unique_ptr<Node<T>>& getMinimum(const std::unique_ptr<Node<T>>& root)
     return getMinimum(root->getLeft());
 }
 
+// Returns the number of elements written
+template <class T>
+int toArray(const std::unique_ptr<Node<T>>& root, T* array) {
+    if (root == nullptr) {
+        return 0;
+    }
+
+    int written = 0;
+    written += toArray(root->getLeft(), array);
+    array[written] = root->data;
+    written++;
+    written += toArray(root->getRight(), array + written);
+    return written;
+}
+
+template <class T>
+std::unique_ptr<Node<T>> fromArray(T* array, int size) {
+    if (size == 0) {
+        return nullptr;
+    }
+
+    if (size % 2 == 1) {
+        int leftSize = size / 2;
+        int rightSize = size / 2;
+        std::unique_ptr<Node<T>> root = std::make_unique<Node<T>>(array[leftSize]);
+        root->setLeft(fromArray(array, leftSize));
+        root->setRight(fromArray(array + leftSize + 1, rightSize));
+        return root;
+    }
+
+    if (size % 2 == 0) {
+        int leftSize = size / 2 - 1;
+        int rightSize = size / 2;
+        std::unique_ptr<Node<T>> root = std::make_unique<Node<T>>(array[leftSize]);
+        root->setLeft(fromArray(array, leftSize));
+        root->setRight(fromArray(array + leftSize + 1, rightSize));
+        return root;
+    }
+}
+
 template <class T>
 class Tree {
 private:
@@ -386,17 +426,14 @@ public:
     // Return value must be deleted by the caller using delete[].
     T* toArray() {
         T* array = new T[m_size];
-        // TODO: Implement this.
-        throw std::exception();
+        int written = toArray(root, array);
+        assert(written == m_size);
+        return array;
     }
 
     // Input array must be deleted by the caller using delete[].
     static Tree fromArray(T* array, int size) {
-        Tree tree;
-        for (int i = 0; i < size; i++) {
-            tree.insert(i, array[i]);
-        }
-        return tree;
+        return treeFromArray(array, size);
     }
 
     friend auto operator<<(std::ostream& os, const Tree& tree) -> std::ostream& { 
