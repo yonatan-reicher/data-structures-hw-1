@@ -300,31 +300,54 @@ T avlRemove(std::unique_ptr<Node<T>>& root, int key) {
 }
 
 template <class T>
+const std::unique_ptr<Node<T>>& getMaximum(const std::unique_ptr<Node<T>>& root) {
+    if (root->getRight() == nullptr) {
+        return root;
+    }
+    return getMaximum(root->getRight());
+}
+
+template <class T>
+const std::unique_ptr<Node<T>>& getMinimum(const std::unique_ptr<Node<T>>& root) {
+    if (root->getLeft() == nullptr) {
+        return root;
+    }
+    return getMinimum(root->getLeft());
+}
+
+template <class T>
 class Tree {
 private:
     using Node = Node<T>;
 
     std::unique_ptr<Node> root;
     int m_size;
+    std::unique_ptr<Node>* m_minimum;
+    std::unique_ptr<Node>* m_maximum;
 
 public:
     Tree() {
         root = nullptr;
         m_size = 0;
-    }
-    virtual ~Tree() {
-        root = nullptr;
+        m_minimum = &root;
+        m_maximum = &root;
     }
 
     T& insert(int key, T data) {
         T& dataReference = avlInsert(root, key, std::move(data));
         m_size++; // Must happen after the insert so we don't count failed calls.
+        // Update minimum and maximum. O(log n) time so it's fine.
+        m_minimum = &getMinimum(root);
+        m_maximum = &getMaximum(root);
         return dataReference;
     }
 
     T remove(int key) {
         T data = avlRemove(root, key);
         m_size--; // Must happen after the remove so we don't count failed calls.
+        // Update minimum and maximum. O(log n) time so it's fine.
+        m_minimum = &getMinimum(root);
+        m_maximum = &getMaximum(root);
         return data;
     }
 
@@ -342,6 +365,38 @@ public:
 
     int size() const {
         return m_size;
+    }
+
+    T* minimum() {
+        return (*m_minimum)->data;
+    }
+
+    int minimumKey() {
+        return (*m_minimum)->key;
+    }
+
+    T* maximum() {
+        return (*m_maximum)->data;
+    }
+
+    int maximumKey() {
+        return (*m_maximum)->key;
+    }
+
+    // Return value must be deleted by the caller using delete[].
+    T* toArray() {
+        T* array = new T[m_size];
+        // TODO: Implement this.
+        throw std::exception();
+    }
+
+    // Input array must be deleted by the caller using delete[].
+    static Tree fromArray(T* array, int size) {
+        Tree tree;
+        for (int i = 0; i < size; i++) {
+            tree.insert(i, array[i]);
+        }
+        return tree;
     }
 
     friend auto operator<<(std::ostream& os, const Tree& tree) -> std::ostream& { 
