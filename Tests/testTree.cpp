@@ -17,7 +17,7 @@ int countDistinct(std::vector<int> data) {
 
 void testData(const std::vector<int>& data) {
     int distinct = countDistinct(data);
-    Tree<int> tree;
+    Tree<int, int> tree;
 
     for (int i = 0; i < data.size(); i++) {
         tree.insert(i, data[i]);

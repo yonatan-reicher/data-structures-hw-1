@@ -24,9 +24,9 @@ auto operator<<(std::ostream& os, const std::unique_ptr<Node<K, T>>& node) -> st
 // Functions marked with "avl" are AVL tree functions.
 
 template <class K, class T>
-T& btInsert(std::unique_ptr<Node<K, T>>& root, K key, T data) {
+T& btInsert(std::unique_ptr<Node<K, T>>& root, const K& key, T data) {
     if (root == nullptr) {
-        root = std::unique_ptr<Node<K, T>>(new Node<K, T>(std::move(key), std::move(data)));
+        root = std::unique_ptr<Node<K, T>>(new Node<K, T>(key, std::move(data)));
         return root->data;
     }
 
@@ -37,12 +37,12 @@ T& btInsert(std::unique_ptr<Node<K, T>>& root, K key, T data) {
 
     if (key < root->key) {
         std::unique_ptr<Node<K, T>> left = root->popLeft();
-        T& ret = btInsert(left, key, data);
+        T& ret = btInsert(left, key, std::move(data));
         root->setLeft(std::move(left));
         return ret;
     } else {
         std::unique_ptr<Node<K, T>> right = root->popRight();
-        T& ret = btInsert(right, key, data);
+        T& ret = btInsert(right, key, std::move(data));
         root->setRight(std::move(right));
         return ret;
     }
@@ -65,7 +65,7 @@ std::unique_ptr<Node<K, T>> popRightmost(std::unique_ptr<Node<K, T>>& node) {
 }
 
 template <class K, class T>
-T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key) {
+T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key, K* keyOfSwitched) {
     if (root == nullptr) {
         throw NotFoundException<K>(key);
     }
@@ -94,14 +94,17 @@ T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key) {
         root = std::move(rightmost);
         root->setLeft(std::move(left));
         root->setRight(std::move(right));
+        if (keyOfSwitched != nullptr) {
+            *keyOfSwitched = root->key;
+        }
         return root->data;
     } else if (key < root->key) {
         std::unique_ptr<Node<K, T>> left = root->popLeft();
-        result = btRemove(left, key);
+        result = btRemove(left, key, keyOfSwitched);
         root->setLeft(std::move(left));
     } else {
         std::unique_ptr<Node<K, T>> right = root->popRight();
-        result = btRemove(right, key);
+        result = btRemove(right, key, keyOfSwitched);
         root->setRight(std::move(right));
     }
     return std::move(result);
@@ -241,32 +244,127 @@ bool rebalanceBranch(std::unique_ptr<Node<K, T>>& root, const K& pathKey, bool o
     std::unique_ptr<Node<K, T>> next = rightChild ? root->popRight() : root->popLeft();
 
     bool rebalanced = rebalanceBranch(next, pathKey, once);
-    if (!rebalanced || !once) {
-        rebalanced = rebalanceRoot(next);
-    }
 
     if (rightChild) root->setRight(std::move(next));
     else root->setLeft(std::move(next));
+
+    if (!rebalanced || !once) {
+        rebalanced = rebalanceRoot(root);
+    }
 
     return rebalanced;
 }
 
 template <class K, class T>
-T& avlInsert(std::unique_ptr<Node<K, T>>& root, K key, T data) {
+const K& getRightmostKey(const std::unique_ptr<Node<K, T>>& root) {
+    assert(root != nullptr);
+    if (root->getRight() == nullptr) {
+        return root->key;
+    }
+    return getRightmostKey(root->getRight());
+}
+
+template <class K, class T>
+const K& getAvlRemoveRebalancePath(const std::unique_ptr<Node<K, T>>& root, const K& key) {
+    if (root == nullptr) return key;
+
+    if (key == root->key) {
+        if (root->getLeft() != nullptr) {
+            return getRightmostKey(root->getLeft());
+        } else {
+            return root->key;
+        }
+    }
+    if (key < root->key) {
+        return getAvlRemoveRebalancePath(root->getLeft(), key);
+    } else {
+        return getAvlRemoveRebalancePath(root->getRight(), key);
+    }
+}
+
+template <class K, class T>
+T& avlInsert(std::unique_ptr<Node<K, T>>& root, const K& key, T data) {
     T& dataReference = btInsert(root, key, std::move(data));
 
-    rebalanceBranch(root, std::move(key), true);
+    rebalanceBranch(root, key, true);
 
     return dataReference;
 }
 
 template <class K, class T>
-T avlRemove(std::unique_ptr<Node<K, T>>& root, K key) {
-    T data = btRemove(root, key);
-
-    rebalanceBranch(root, std::move(key), false);
+T avlRemove(std::unique_ptr<Node<K, T>>& root, const K& key) {
+    K pathKey = key;
+    T data = btRemove(root, key, &pathKey);
+    pathKey = getAvlRemoveRebalancePath(root, pathKey);
+    rebalanceBranch(root, pathKey, false);
 
     return data;
+}
+
+template <class K, class T>
+const std::unique_ptr<Node<K, T>>& getMaximum(const std::unique_ptr<Node<K, T>>& root) {
+    if (root == nullptr) {
+        return root;
+    }
+    if (root->getRight() == nullptr) {
+        return root;
+    }
+    return getMaximum(root->getRight());
+}
+
+template <class K, class T>
+const std::unique_ptr<Node<K, T>>& getMinimum(const std::unique_ptr<Node<K, T>>& root) {
+    if (root == nullptr) {
+        return root;
+    }
+    if (root->getLeft() == nullptr) {
+        return root;
+    }
+    return getMinimum(root->getLeft());
+}
+
+// Returns the number of elements written
+template <class K, class T>
+int toArray(const std::unique_ptr<Node<K, T>>& root, T* array) {
+    if (root == nullptr) {
+        return 0;
+    }
+
+    int written = 0;
+    written += toArray(root->getLeft(), array);
+    array[written] = root->data;
+    written++;
+    written += toArray(root->getRight(), array + written);
+    return written;
+}
+
+template <class K, class T, class F>
+std::unique_ptr<Node<K, T>> fromArray(T* array, int size, F& keyGenerator) {
+    if (size == 0) {
+        return nullptr;
+    }
+
+    if (size % 2 == 1) {
+        int leftSize = size / 2;
+        int rightSize = size / 2;
+        std::unique_ptr<Node<K, T>> root = std::unique_ptr<Node<K, T>>(
+            new Node<K, T>(keyGenerator(array[leftSize]), array[leftSize])
+        );
+        root->setLeft(fromArray(array, leftSize));
+        root->setRight(fromArray(array + leftSize + 1, rightSize));
+        return root;
+    }
+
+    if (size % 2 == 0) {
+        int leftSize = size / 2 - 1;
+        int rightSize = size / 2;
+        std::unique_ptr<Node<K, T>> root = std::unique_ptr<Node<K, T>>(
+            new Node<K, T>(keyGenerator(array[leftSize]), array[leftSize])
+        );
+        root->setLeft(fromArray(array, leftSize));
+        root->setRight(fromArray(array + leftSize + 1, rightSize));
+        return root;
+    }
 }
 
 template <class K, class T>
@@ -276,25 +374,31 @@ private:
 
     std::unique_ptr<Node> root;
     int m_size;
-
+    std::unique_ptr<Node>* m_minimum;
+    std::unique_ptr<Node>* m_maximum;
 public:
     Tree() {
         root = nullptr;
         m_size = 0;
-    }
-    virtual ~Tree() {
-        root = nullptr;
+        m_minimum = &root;
+        m_maximum = &root;
     }
 
-    T& insert(K key, T data) {
-        T& dataReference = avlInsert(root, std::move(key), std::move(data));
+    T& insert(const K& key, T data) {
+        T& dataReference = avlInsert(root, key, std::move(data));
         m_size++; // Must happen after the insert so we don't count failed calls.
+        // Update minimum and maximum. O(log n) time so it's fine.
+        m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(root));
+        m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(root));
         return dataReference;
     }
 
-    T remove(K key) {
+    T remove(const K& key) {
         T data = avlRemove(root, key);
         m_size--; // Must happen after the remove so we don't count failed calls.
+        // Update minimum and maximum. O(log n) time so it's fine.
+        m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(root));
+        m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(root));
         return data;
     }
 
@@ -319,6 +423,35 @@ public:
         return m_size;
     }
 
+    T* minimum() {
+        return (*m_minimum)->data;
+    }
+
+    const K& minimumKey() {
+        return (*m_minimum)->key;
+    }
+
+    T* maximum() {
+        return (*m_maximum)->data;
+    }
+
+    const K& maximumKey() {
+        return (*m_maximum)->key;
+    }
+
+    // Return value must be deleted by the caller using delete[].
+    T* toArray() {
+        T* array = new T[m_size];
+        int written = toArray(root, array);
+        assert(written == m_size);
+        return array;
+    }
+
+    // Input array must be deleted by the caller using delete[].
+    static Tree fromArray(T* array, int size) {
+        return treeFromArray(array, size);
+    }
+
     friend auto operator<<(std::ostream& os, const Tree& tree) -> std::ostream& { 
         return os << tree.root;
     }
@@ -328,16 +461,16 @@ template <class K, class T>
 auto operator<<(std::ostream& os, const std::unique_ptr<Node<K, T>>& node) -> std::ostream& { 
     os << '[';
     
-    if (node->getLeft() != nullptr) {
-        os << node->getLeft().get();
-    }
+    if (node) {
+        if (node->getLeft() != nullptr) {
+            os << node->getLeft();
+        }
 
-    if (node != nullptr) {
         os << node->key << ":" << node->data;
-    }
 
-    if (node->getRight() != nullptr) {
-        os << node->getRight().get();
+        if (node->getRight() != nullptr) {
+            os << node->getRight();
+        }
     }
 
     return os << ']';
