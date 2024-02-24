@@ -7,8 +7,12 @@
 #include "node.h"
 
 struct NotFoundException : public std::exception {
+    int key;
+
+    explicit NotFoundException(int key) : key(key) {}
+
     const char* what() const throw() {
-        return "Key not found";
+        return "Key not found: " + key;
     }
 };
 
@@ -62,7 +66,7 @@ std::unique_ptr<Node<T>> popRightmost(std::unique_ptr<Node<T>>& node) {
 template <class T>
 T btRemove(std::unique_ptr<Node<T>>& root, int key) {
     if (root == nullptr) {
-        throw NotFoundException();
+        throw NotFoundException(key);
     }
 
     T result;
@@ -105,7 +109,7 @@ T btRemove(std::unique_ptr<Node<T>>& root, int key) {
 template <class T>
 T& btGet(Node<T>* root, int key) {
     if (root == nullptr) {
-        throw NotFoundException();
+        throw NotFoundException(key);
     }
 
     if (root->key == key) {
