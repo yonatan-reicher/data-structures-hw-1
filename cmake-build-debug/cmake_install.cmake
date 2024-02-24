@@ -1,4 +1,4 @@
-# Install script for directory: C:/dev/Data structures/data-structures-hw-1/data-structures-hw1
+# Install script for directory: C:/dev/Technion/Semester 3/Data structures/data-structures-hw-1
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/dev/Data structures/data-structures-hw-1/data-structures-hw1/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/dev/Technion/Semester 3/Data structures/data-structures-hw-1/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

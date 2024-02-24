@@ -1,3 +1,3 @@
-C:/dev/Data structures/data-structures-hw-1/data-structures-hw1/cmake-build-debug/CMakeFiles/data_structures_hw1.dir
-C:/dev/Data structures/data-structures-hw-1/data-structures-hw1/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/dev/Data structures/data-structures-hw-1/data-structures-hw1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/dev/Technion/Semester 3/Data structures/data-structures-hw-1/cmake-build-debug/CMakeFiles/data_structures_hw1.dir
+C:/dev/Technion/Semester 3/Data structures/data-structures-hw-1/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/dev/Technion/Semester 3/Data structures/data-structures-hw-1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
