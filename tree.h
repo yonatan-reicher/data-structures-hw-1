@@ -126,9 +126,8 @@ T& btGet(Node<T>* root, int key) {
 template <class T>
 void rotate(std::unique_ptr<Node<T>>& root, bool right) {
     assert(root != nullptr);
-    assert(root->getLeft() != nullptr && root->getRight() != nullptr);
     const std::unique_ptr<Node<T>>& bRef = right ? root->getLeft() : root->getRight();
-    assert(bRef->getLeft() != nullptr && bRef->getRight() != nullptr);
+    assert(bRef != nullptr);
 
     // This is the action we want to perform:
     /*        A    right   B
@@ -136,6 +135,8 @@ void rotate(std::unique_ptr<Node<T>>& root, bool right) {
      *      B   C   <==  D   A
      *     / \     left     / \
      *    D   E            E   C
+     *
+     *    (Here C, D, and E can all be nulls)
      */
 
     // Here we use the names from the diagram above (of the right rotation).
