@@ -20,16 +20,18 @@ void testData(const std::vector<int>& data) {
     Tree<int, int> tree;
 
     for (int i = 0; i < data.size(); i++) {
-        tree.insert(i, data[i]);
+        tree.insert(data[i], data[i]);
     }
     assert(tree.size() == distinct);
 
     for (int i = 0; i < data.size(); i++) {
-        assert(tree.get(i) == data[i]);
+        assert(tree.get(data[i]) == data[i]);
     }
     for (int i = 0; i < data.size(); i++) {
-        if (tree.contains(i)) {
-            assert(tree.remove(i) == data[i]);
+        std::cout << "Removing " << data[i] << std::endl;
+        std::cout << tree << std::endl;
+        if (tree.contains(data[i])) {
+            assert(tree.remove(data[i]) == data[i]);
         }
     }
     assert(tree.size() == 0);

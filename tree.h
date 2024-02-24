@@ -24,7 +24,7 @@ auto operator<<(std::ostream& os, const std::unique_ptr<Node<K, T>>& node) -> st
 // Functions marked with "avl" are AVL tree functions.
 
 template <class K, class T>
-T& btInsert(std::unique_ptr<Node<K, T>>& root, const K& key, T data) {
+T& btInsert(std::unique_ptr<Node<K, T>>& root, const K& key, T data, bool* alreadyExisted) {
     if (root == nullptr) {
         root = std::unique_ptr<Node<K, T>>(new Node<K, T>(key, std::move(data)));
         return root->data;
@@ -32,17 +32,20 @@ T& btInsert(std::unique_ptr<Node<K, T>>& root, const K& key, T data) {
 
     if (key == root->key) {
         root->data = std::move(data);
+        if (alreadyExisted != nullptr) {
+            *alreadyExisted = true;
+        }
         return root->data;
     }
 
     if (key < root->key) {
         std::unique_ptr<Node<K, T>> left = root->popLeft();
-        T& ret = btInsert(left, key, std::move(data));
+        T& ret = btInsert(left, key, std::move(data), alreadyExisted);
         root->setLeft(std::move(left));
         return ret;
     } else {
         std::unique_ptr<Node<K, T>> right = root->popRight();
-        T& ret = btInsert(right, key, std::move(data));
+        T& ret = btInsert(right, key, std::move(data), alreadyExisted);
         root->setRight(std::move(right));
         return ret;
     }
@@ -88,6 +91,7 @@ T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key, K* keyOfSwitched) {
          */
         // Find the rightmost node in the left subtree. Swap the data.
         // This should be done *carefully* so no uniqueptr is cleaned up!
+        result = std::move(root->data);
         std::unique_ptr<Node<K, T>> left = root->popLeft();
         std::unique_ptr<Node<K, T>> right = root->popRight();
         std::unique_ptr<Node<K, T>> rightmost = popRightmost(left);
@@ -97,7 +101,6 @@ T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key, K* keyOfSwitched) {
         if (keyOfSwitched != nullptr) {
             *keyOfSwitched = root->key;
         }
-        return root->data;
     } else if (key < root->key) {
         std::unique_ptr<Node<K, T>> left = root->popLeft();
         result = btRemove(left, key, keyOfSwitched);
@@ -283,8 +286,8 @@ const K& getAvlRemoveRebalancePath(const std::unique_ptr<Node<K, T>>& root, cons
 }
 
 template <class K, class T>
-T& avlInsert(std::unique_ptr<Node<K, T>>& root, const K& key, T data) {
-    T& dataReference = btInsert(root, key, std::move(data));
+T& avlInsert(std::unique_ptr<Node<K, T>>& root, const K& key, T data, bool* wasInserted) {
+    T& dataReference = btInsert(root, key, std::move(data), wasInserted);
 
     rebalanceBranch(root, key, true);
 
@@ -385,8 +388,11 @@ public:
     }
 
     T& insert(const K& key, T data) {
-        T& dataReference = avlInsert(root, key, std::move(data));
-        m_size++; // Must happen after the insert so we don't count failed calls.
+        bool wasAlreadyInserted = false;
+        T& dataReference = avlInsert(root, key, std::move(data), &wasAlreadyInserted);
+        if (!wasAlreadyInserted) {
+            m_size++; // Must happen after the insert so we don't count failed calls.
+        }
         // Update minimum and maximum. O(log n) time so it's fine.
         m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(root));
         m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(root));
