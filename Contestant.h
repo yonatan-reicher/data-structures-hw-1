@@ -15,8 +15,9 @@ public:
     Team* m_teams[NUM_OF_TEAMS];
     int m_numOfTeams;
     int m_helperIndex;
+    int m_strength;
 
-    Contestant(int id, Sport sport, Country* country);
+    Contestant(int id, Sport sport, Country* country, int strength);
     Contestant(const Contestant& other) = delete;
     Contestant(Contestant&& other) = delete;
 };
