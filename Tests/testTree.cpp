@@ -1,20 +1,44 @@
 #include "../tree.h"
 #include <cassert>
 #include <iostream>
+#include <vector>
+#include <set>
+
+std::vector<int> acsendingData = std::vector<int>{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+std::vector<int> randomData = std::vector<int>{ 23, 1, 1, 2, 23, 5, 6, 7, 3 };
+
+int countDistinct(std::vector<int> data) {
+    std::set<int> distinct;
+    for (int i = 0; i < data.size(); i++) {
+        distinct.insert(data[i]);
+    }
+    return distinct.size();
+}
+
+void testData(const std::vector<int>& data) {
+    int distinct = countDistinct(data);
+    Tree<int> tree;
+
+    for (int i = 0; i < data.size(); i++) {
+        tree.insert(i, data[i]);
+    }
+    assert(tree.size() == distinct);
+
+    for (int i = 0; i < data.size(); i++) {
+        assert(tree.get(i) == data[i]);
+    }
+    for (int i = 0; i < data.size(); i++) {
+        if (tree.contains(i)) {
+            assert(tree.remove(i) == data[i]);
+        }
+    }
+    assert(tree.size() == 0);
+}
 
 int main() {
 
-    Tree<int> tree;
-    tree.insert(1, 2);
-    tree.insert(2, 3);
-    tree.insert(3, 4);
-
-    assert(tree.get(3) == 4);
-    assert(tree.size() == 3);
-    assert(tree.remove(3) == 4);
-    assert(tree.size() == 2);
-
-    auto x = new int(5);
+    testData(acsendingData);
+    testData(randomData);
 
     std::cout << "Tree tests passed" << std::endl;
 
