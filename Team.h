@@ -3,7 +3,24 @@
 
 #include "wet1util.h"
 #include "Country.h"
+#include "Contestant.h"
 #include "tree.h"
+
+// Needed because of circular dependency
+class Contestant;
+
+struct StrengthAndId {
+    int m_strength;
+    int m_id;
+
+    StrengthAndId(int power, int id);
+    StrengthAndId(const Contestant& contestant);
+
+    bool operator<(const StrengthAndId& other) const;
+    bool operator>(const StrengthAndId& other) const;
+    bool operator==(const StrengthAndId& other) const;
+    bool operator!=(const StrengthAndId& other) const;
+};
 
 #define NUM_OF_TREES 3
 

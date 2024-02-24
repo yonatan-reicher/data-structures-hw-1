@@ -5,6 +5,9 @@
 #include "Country.h"
 #include "Team.h"
 
+// Needed because of circular dependency
+class Team;
+
 #define NUM_OF_TEAMS 3
 
 class Contestant {
