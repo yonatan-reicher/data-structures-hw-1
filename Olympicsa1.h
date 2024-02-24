@@ -16,12 +16,19 @@
 #define STREAMINGDBA1_H_
 
 #include "wet1util.h"
+#include "Country.h"
+#include "Team.h"
+#include "Contestant.h"
+#include "tree.h"
 
 class Olympics {
 private:
 	//
 	// Here you may add anything you want
 	//
+    Tree<int, Country> m_countries;
+    Tree<int, Team> m_teams;
+    Tree<int, Contestant> m_contestants;
 	
 public:
 	// <DO-NOT-MODIFY> {
