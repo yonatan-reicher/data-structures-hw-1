@@ -194,6 +194,9 @@ enum class RebalanceType {
     LL, RR, LR, RL, NONE
 };
 
+// Why is this a template? Because if it wasn't it would be redefined multiple
+// times and that won't compile.
+template <class K, class T> 
 RebalanceType chooseRebalanceByBalanceFactor(int atRoot, int atLeft, int atRight) {
     assert(-2 <= atRoot && atRoot <= 2);
     assert(-1 <= atLeft && atLeft <= 1);
@@ -217,7 +220,7 @@ bool rebalanceRoot(std::unique_ptr<Node<K, T>>& root) {
     int atLeft = balanceFactor(root->getLeft());
     int atRight = balanceFactor(root->getRight());
 
-    switch (chooseRebalanceByBalanceFactor(atRoot, atLeft, atRight)) {
+    switch (chooseRebalanceByBalanceFactor<K, T>(atRoot, atLeft, atRight)) {
         case RebalanceType::LL:
             rotateLLOrRR(root, true);
             return true;
