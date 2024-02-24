@@ -6,26 +6,27 @@
 #include <iostream>
 #include "node.h"
 
+template <class K>
 struct NotFoundException : public std::exception {
-    int key;
+    K key;
 
-    explicit NotFoundException(int key) : key(key) {}
+    explicit NotFoundException(K key) : key(std::move(key)) {}
 
     const char* what() const throw() {
-        return "Key not found: " + key;
+        return "Key not found";
     }
 };
 
-template <class T>
-auto operator<<(std::ostream& os, const std::unique_ptr<Node<T>>& node) -> std::ostream&;
+template <class K, class T>
+auto operator<<(std::ostream& os, const std::unique_ptr<Node<K, T>>& node) -> std::ostream&;
 
 // Functions marked with "bt" are binary tree functions.
 // Functions marked with "avl" are AVL tree functions.
 
-template <class T>
-T& btInsert(std::unique_ptr<Node<T>>& root, int key, T data) {
+template <class K, class T>
+T& btInsert(std::unique_ptr<Node<K, T>>& root, K key, T data) {
     if (root == nullptr) {
-        root = std::unique_ptr<Node<T>>(new Node<T>(key, std::move(data)));
+        root = std::unique_ptr<Node<K, T>>(new Node<K, T>(std::move(key), std::move(data)));
         return root->data;
     }
 
@@ -35,38 +36,38 @@ T& btInsert(std::unique_ptr<Node<T>>& root, int key, T data) {
     }
 
     if (key < root->key) {
-        std::unique_ptr<Node<T>> left = root->popLeft();
+        std::unique_ptr<Node<K, T>> left = root->popLeft();
         T& ret = btInsert(left, key, data);
         root->setLeft(std::move(left));
         return ret;
     } else {
-        std::unique_ptr<Node<T>> right = root->popRight();
+        std::unique_ptr<Node<K, T>> right = root->popRight();
         T& ret = btInsert(right, key, data);
         root->setRight(std::move(right));
         return ret;
     }
 }
 
-template <class T>
-std::unique_ptr<Node<T>> popRightmost(std::unique_ptr<Node<T>>& node) {
+template <class K, class T>
+std::unique_ptr<Node<K, T>> popRightmost(std::unique_ptr<Node<K, T>>& node) {
     assert(node != nullptr);
 
     if (node->getRight() == nullptr) {
-        std::unique_ptr<Node<T>> ret = std::move(node);
+        std::unique_ptr<Node<K, T>> ret = std::move(node);
         node = ret->popLeft();
         return ret;
     }
 
-    std::unique_ptr<Node<T>> right = node->popRight();
-    std::unique_ptr<Node<T>> ret = popRightmost(right);
+    std::unique_ptr<Node<K, T>> right = node->popRight();
+    std::unique_ptr<Node<K, T>> ret = popRightmost(right);
     node->setRight(std::move(right));
     return ret;
 }
 
-template <class T>
-T btRemove(std::unique_ptr<Node<T>>& root, int key) {
+template <class K, class T>
+T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key) {
     if (root == nullptr) {
-        throw NotFoundException(key);
+        throw NotFoundException<K>(key);
     }
 
     T result;
@@ -87,29 +88,29 @@ T btRemove(std::unique_ptr<Node<T>>& root, int key) {
          */
         // Find the rightmost node in the left subtree. Swap the data.
         // This should be done *carefully* so no uniqueptr is cleaned up!
-        std::unique_ptr<Node<T>> left = root->popLeft();
-        std::unique_ptr<Node<T>> right = root->popRight();
-        std::unique_ptr<Node<T>> rightmost = popRightmost(left);
+        std::unique_ptr<Node<K, T>> left = root->popLeft();
+        std::unique_ptr<Node<K, T>> right = root->popRight();
+        std::unique_ptr<Node<K, T>> rightmost = popRightmost(left);
         root = std::move(rightmost);
         root->setLeft(std::move(left));
         root->setRight(std::move(right));
         return root->data;
     } else if (key < root->key) {
-        std::unique_ptr<Node<T>> left = root->popLeft();
+        std::unique_ptr<Node<K, T>> left = root->popLeft();
         result = btRemove(left, key);
         root->setLeft(std::move(left));
     } else {
-        std::unique_ptr<Node<T>> right = root->popRight();
+        std::unique_ptr<Node<K, T>> right = root->popRight();
         result = btRemove(right, key);
         root->setRight(std::move(right));
     }
     return std::move(result);
 }
 
-template <class T>
-T& btGet(Node<T>* root, int key) {
+template <class K, class T>
+T& btGet(Node<K, T>* root, const K& key) {
     if (root == nullptr) {
-        throw NotFoundException(key);
+        throw NotFoundException<K>(key);
     }
 
     if (root->key == key) {
@@ -123,10 +124,10 @@ T& btGet(Node<T>* root, int key) {
     }
 }
 
-template <class T>
-void rotate(std::unique_ptr<Node<T>>& root, bool right) {
+template <class K, class T>
+void rotate(std::unique_ptr<Node<K, T>>& root, bool right) {
     assert(root != nullptr);
-    const std::unique_ptr<Node<T>>& bRef = right ? root->getLeft() : root->getRight();
+    const std::unique_ptr<Node<K, T>>& bRef = right ? root->getLeft() : root->getRight();
     assert(bRef != nullptr);
 
     // This is the action we want to perform:
@@ -140,9 +141,9 @@ void rotate(std::unique_ptr<Node<T>>& root, bool right) {
      */
 
     // Here we use the names from the diagram above (of the right rotation).
-    std::unique_ptr<Node<T>> a = std::move(root);
-    std::unique_ptr<Node<T>> b = right ? a->popLeft() : a->popRight();
-    std::unique_ptr<Node<T>> e = right ? b->popRight() : b->popLeft();
+    std::unique_ptr<Node<K, T>> a = std::move(root);
+    std::unique_ptr<Node<K, T>> b = right ? a->popLeft() : a->popRight();
+    std::unique_ptr<Node<K, T>> e = right ? b->popRight() : b->popLeft();
     // C and D are not needed.
 
     // Now we reassemble the tree. Must go from bottom to top because of moves.
@@ -157,14 +158,14 @@ void rotate(std::unique_ptr<Node<T>>& root, bool right) {
     }
 }
 
-template <class T>
-void rotateLLOrRR(std::unique_ptr<Node<T>>& root, bool ll) {
+template <class K, class T>
+void rotateLLOrRR(std::unique_ptr<Node<K, T>>& root, bool ll) {
     // This is just a single rotation.
     rotate(root, ll);
 }
 
-template <class T>
-void rotateLROrRL(std::unique_ptr<Node<T>>& root, bool lr) {
+template <class K, class T>
+void rotateLROrRL(std::unique_ptr<Node<K, T>>& root, bool lr) {
     /* This is a double rotation.
      *      A             E
      *     / \    LR     / \
@@ -175,7 +176,7 @@ void rotateLROrRL(std::unique_ptr<Node<T>>& root, bool lr) {
      *    F   G    --- This is a left rotation on B then right rotation on A.
      */
 
-    std::unique_ptr<Node<T>> child = lr ? root->popLeft() : root->popRight();
+    std::unique_ptr<Node<K, T>> child = lr ? root->popLeft() : root->popRight();
     rotate(child, !lr);
     if (lr) root->setLeft(std::move(child));
     else root->setRight(std::move(child));
@@ -187,7 +188,7 @@ enum class RebalanceType {
     LL, RR, LR, RL, NONE
 };
 
-RebalanceType chooseRebalanceByBalanceFactor( int atRoot, int atLeft, int atRight) {
+RebalanceType chooseRebalanceByBalanceFactor(int atRoot, int atLeft, int atRight) {
     assert(-2 <= atRoot && atRoot <= 2);
     assert(-1 <= atLeft && atLeft <= 1);
     assert(-1 <= atRight && atRight <= 1);
@@ -200,8 +201,8 @@ RebalanceType chooseRebalanceByBalanceFactor( int atRoot, int atLeft, int atRigh
 }
 
 // Returns true iff the tree was rebalanced.
-template <class T>
-bool rebalanceRoot(std::unique_ptr<Node<T>>& root) {
+template <class K, class T>
+bool rebalanceRoot(std::unique_ptr<Node<K, T>>& root) {
     if (root == nullptr) {
         return false;
     }
@@ -230,14 +231,14 @@ bool rebalanceRoot(std::unique_ptr<Node<T>>& root) {
     }
 }
 
-template <class T>
-bool rebalanceBranch(std::unique_ptr<Node<T>>& root, int pathKey, bool once) {
+template <class K, class T>
+bool rebalanceBranch(std::unique_ptr<Node<K, T>>& root, const K& pathKey, bool once) {
     if (root == nullptr) {
         return false;
     }
 
     bool rightChild = pathKey > root->key;
-    std::unique_ptr<Node<T>> next = rightChild ? root->popRight() : root->popLeft();
+    std::unique_ptr<Node<K, T>> next = rightChild ? root->popRight() : root->popLeft();
 
     bool rebalanced = rebalanceBranch(next, pathKey, once);
     if (!rebalanced || !once) {
@@ -250,28 +251,28 @@ bool rebalanceBranch(std::unique_ptr<Node<T>>& root, int pathKey, bool once) {
     return rebalanced;
 }
 
-template <class T>
-T& avlInsert(std::unique_ptr<Node<T>>& root, int key, T data) {
+template <class K, class T>
+T& avlInsert(std::unique_ptr<Node<K, T>>& root, K key, T data) {
     T& dataReference = btInsert(root, key, std::move(data));
 
-    rebalanceBranch(root, key, true);
+    rebalanceBranch(root, std::move(key), true);
 
     return dataReference;
 }
 
-template <class T>
-T avlRemove(std::unique_ptr<Node<T>>& root, int key) {
+template <class K, class T>
+T avlRemove(std::unique_ptr<Node<K, T>>& root, K key) {
     T data = btRemove(root, key);
 
-    rebalanceBranch(root, key, false);
+    rebalanceBranch(root, std::move(key), false);
 
     return data;
 }
 
-template <class T>
+template <class K, class T>
 class Tree {
 private:
-    using Node = Node<T>;
+    using Node = Node<K, T>;
 
     std::unique_ptr<Node> root;
     int m_size;
@@ -285,31 +286,31 @@ public:
         root = nullptr;
     }
 
-    T& insert(int key, T data) {
-        T& dataReference = avlInsert(root, key, data);
+    T& insert(K key, T data) {
+        T& dataReference = avlInsert(root, std::move(key), std::move(data));
         m_size++; // Must happen after the insert so we don't count failed calls.
         return dataReference;
     }
 
-    T remove(int key) {
+    T remove(K key) {
         T data = avlRemove(root, key);
         m_size--; // Must happen after the remove so we don't count failed calls.
         return data;
     }
 
-    T& get(int key) {
+    T& get(const K& key) {
         return btGet(root.get(), key);
     }
 
-    const T& get(int key) const {
+    const T& get(const K& key) const {
         return btGet(root.get(), key);
     }
 
-    bool contains(int key) const {
+    bool contains(const K& key) const {
         try {
             get(key);
             return true;
-        } catch (const NotFoundException& e) {
+        } catch (const NotFoundException<K>& e) {
             return false;
         }
     }
@@ -323,8 +324,8 @@ public:
     }
 };
 
-template <class T>
-auto operator<<(std::ostream& os, const std::unique_ptr<Node<T>>& node) -> std::ostream& { 
+template <class K, class T>
+auto operator<<(std::ostream& os, const std::unique_ptr<Node<K, T>>& node) -> std::ostream& { 
     os << '[';
     
     if (node->getLeft() != nullptr) {

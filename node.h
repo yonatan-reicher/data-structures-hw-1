@@ -3,38 +3,38 @@
 
 #include <memory>
 
-template <class T>
+template <class K, class T>
 class Node;
 
 // These are functions that cannot be methods because they can be called on a nullptr
 
-template <class T>
-int height(const std::unique_ptr<Node<T>>& root) {
+template <class K, class T>
+int height(const std::unique_ptr<Node<K, T>>& root) {
     if (root == nullptr) {
         return 0;
     }
     return root->m_height;
 }
 
-template <class T>
-int balanceFactor(const std::unique_ptr<Node<T>>& root) {
+template <class K, class T>
+int balanceFactor(const std::unique_ptr<Node<K, T>>& root) {
     if (root == nullptr) {
         return 0;
     }
     return height(root->m_left) - height(root->m_right);
 }
 
-template <class T>
+template <class K, class T>
 class Node {
     std::unique_ptr<Node> m_left;
     std::unique_ptr<Node> m_right;
     int m_height;
 public:
-    int key;
+    K key;
     T data;
 
-    Node(int key, T data) {
-        this->key = key;
+    Node(K key, T data) {
+        this->key = std::move(key);
         this->data = std::move(data);
         m_left = nullptr;
         m_right = nullptr;
@@ -76,10 +76,10 @@ private:
         m_height = 1 + std::max(height(m_left), height(m_right));
     }
 
-    template <class U>
-    friend int height(const std::unique_ptr<Node<U>>&);
-    template <class U>
-    friend int balanceFactor(const std::unique_ptr<Node<U>>&);
+    template <class L, class U>
+    friend int height(const std::unique_ptr<Node<L, U>>&);
+    template <class L, class U>
+    friend int balanceFactor(const std::unique_ptr<Node<L, U>>&);
 };
 
 #endif
