@@ -9,9 +9,13 @@ Team::Team(int id, Sport sport, Country* country) {
 }
 
 bool Team::canBeDeleted() const {
+    return size() == 0;
+}
+
+int Team::size() const {
+    int size = 0;
     for (int i = 0; i < NUM_OF_TREES; i++) {
-        if (m_contestantIds->size() != 0)
-            return false;
+        size += m_contestantIds[i].size();
     }
-    return true;
+    return size;
 }

@@ -28,6 +28,8 @@ public:
     Team(Team&& other) = delete;
 
     bool canBeDeleted() const;
+
+    int size() const;
 };
 
 #endif
