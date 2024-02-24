@@ -305,7 +305,12 @@ public:
     }
 
     bool contains(int key) const {
-        return find(root, key) != nullptr;
+        try {
+            get(key);
+            return true;
+        } catch (const NotFoundException& e) {
+            return false;
+        }
     }
 
     int size() const {
