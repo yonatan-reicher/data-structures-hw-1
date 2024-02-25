@@ -28,3 +28,7 @@ bool Contestant::addTeam(Team* team) {
     m_numOfTeams++;
     return true;
 }
+
+bool Contestant::canBeDeleted() const {
+    return m_numOfTeams == 0;
+}

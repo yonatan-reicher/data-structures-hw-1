@@ -73,6 +73,9 @@ T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key, K* keyOfSwitched) {
         throw NotFoundException<K>(key);
     }
 
+    // the line below demands default constructor so:
+    // 1) we make it ptr?
+    // 2) we enable default constructors in our classes
     T result;
     if (root->key == key && root->getLeft() == nullptr) {
         result = std::move(root->data);

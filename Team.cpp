@@ -4,7 +4,6 @@ Team::Team(int id, Sport sport, Country* country) {
     m_id = id;
     m_sport = sport;
     m_country = country;
-    m_points = 0;
     m_strength = 0;
 }
 

@@ -104,11 +104,59 @@ StatusType Olympics::remove_team(int teamId){
 }
 	
 StatusType Olympics::add_contestant(int contestantId ,int countryId,Sport sport,int strength){
-	return StatusType::FAILURE;
+    try {
+        if (contestantId <= 0 || countryId <= 0 || strength < 0)
+        {
+            return StatusType::INVALID_INPUT;
+        }
+        Country *country = nullptr;
+        Contestant *contestant = nullptr;
+        try
+        {
+            country = &m_countries.get(countryId);
+            contestant = &m_contestants.get(contestantId);
+        }
+        catch (NotFoundException<int>&)
+        {
+            if (country == nullptr || contestant != nullptr)
+            {
+                return StatusType::FAILURE;
+            }
+        }
+        contestant = new Contestant(contestantId, sport, country, strength);
+
+        m_contestants.insert(contestantId, *contestant);
+        country->m_numOfContestants++;
+        return StatusType::SUCCESS;
+    }
+    catch (std::bad_alloc&){
+        return StatusType::ALLOCATION_ERROR;
+    }
 }
 	
 StatusType Olympics::remove_contestant(int contestantId){
-	return StatusType::FAILURE;
+	if(contestantId <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
+
+    try {
+        Contestant contestant = m_contestants.get(contestantId);
+        if(contestant.canBeDeleted())
+        {
+            m_contestants.remove(contestantId);
+            contestant.m_country->m_numOfContestants--;
+            return StatusType::SUCCESS;
+        }
+        else
+        {
+            return StatusType::FAILURE;
+        }
+    }
+    catch (NotFoundException<int>&){
+        return StatusType::FAILURE;
+    }
+    // no alloc errors can occur, right?
 }
 	
 StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){

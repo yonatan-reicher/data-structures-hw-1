@@ -24,6 +24,7 @@ public:
 
     bool removeTeam(Team* team);
     bool addTeam(Team* team);
+    bool canBeDeleted() const;
 };
 
 #endif
