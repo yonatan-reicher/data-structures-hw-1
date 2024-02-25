@@ -27,6 +27,8 @@ public:
     // Teams should not be copied
     Team(const Team& other) = delete;
     Team(Team&& other) = default;
+    Team& operator=(const Team& other) = delete;
+    Team& operator=(Team&& other) = default;
 
     bool canBeDeleted() const;
 
