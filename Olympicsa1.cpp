@@ -459,3 +459,25 @@ output_t<int> Olympics::austerity_measures(int teamId){
 	return 0;
 }
 
+
+/*
+    X - done   / - half done    .  started
+     __________________________________________________________
+    |            Method             |  status |      notes     |
+    |-------------------------------|---------|----------------|
+	| add_country                   |    X    |                |
+	| remove_country                |    X    |                |
+	| add_team                      |    X    |                |
+	| remove_team                   |    X    |                |
+	| add_contestant                |    /    |    ptr bug?    |
+	| remove_contestant             |    X    |                |
+	| add_contestant_to_team        |         |                |
+	| remove_contestant_from_team   |         |                |
+	| update_contestant_strength    |         |                |
+	| get_strength                  |         |                |
+	| get_medals                    |    X    |                |
+	| get_team_strength             |         |                |
+	| unite_teams                   |    /    |                |
+	| play_match                    |         |                |
+	| austerity_measures            |    .    |                |
+*/
