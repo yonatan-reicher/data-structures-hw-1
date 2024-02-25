@@ -8,6 +8,64 @@ Olympics::Olympics(){
 Olympics::~Olympics(){
     // All fields are managed by the data structures.
 }
+
+int calculateTeamStrength(const Team& team) {
+    if (team.size() % 3 != 0) {
+        return 0;
+    }
+
+    int strength = 0;
+    for (int i = 0; i < NUM_OF_TREES; i++) {
+        strength += team.m_contestantPowers[i].maximumKey().m_strength;
+    }
+    return strength;
+}
+
+output_t<int> getStrongestContestantFromThird(int thirdIndex, const Team& team) {
+    if (team.m_contestantIds[thirdIndex].size() == 0) {
+        return StatusType::FAILURE;
+    }
+    return team.m_contestantPowers[thirdIndex].maximumKey().m_id;
+}
+
+// Must be O(log #teams + log #contestants)
+void Olympics::updateTeamAusterity(int teamId) {
+    Team& team = m_teams.get(teamId);
+
+    int austerity = 0;
+
+    for (int i1 = 0; i1 < NUM_OF_TREES; i1++) {
+        output_t<int> id1 = getStrongestContestantFromThird(i1, team);
+        if (id1.status() != StatusType::SUCCESS) {
+            continue;
+        }
+
+        remove_contestant_from_team(teamId, id1.ans());
+        for (int i2 = i1; i2 < NUM_OF_TREES; i2++) {
+            output_t<int> id2 = getStrongestContestantFromThird(i2, team);
+            if (id2.status() != StatusType::SUCCESS) {
+                continue;
+            }
+
+            remove_contestant_from_team(teamId, id2.ans());
+            for (int i3 = i2; i3 < NUM_OF_TREES; i3++) {
+                output_t<int> id3 = getStrongestContestantFromThird(i3, team);
+                if (id3.status() != StatusType::SUCCESS) {
+                    continue;
+                }
+
+                remove_contestant_from_team(teamId, id3.ans());
+                austerity = std::max(austerity, calculateTeamStrength(team));
+                add_contestant_to_team(teamId, id3.ans());
+            }
+            add_contestant_to_team(teamId, id2.ans());
+        }
+        add_contestant_to_team(teamId, id1.ans());
+    }
+
+    team.m_cachedAusterity = austerity;
+}
+
 	
 StatusType Olympics::add_country(int countryId, int medals) {
     try {
@@ -174,7 +232,7 @@ StatusType Olympics::update_contestant_strength(int contestantId ,int change){
 }
 
 output_t<int> Olympics::get_strength(int contestantId){
-	return 0;
+
 }
 
 output_t<int> Olympics::get_medals(int countryId){

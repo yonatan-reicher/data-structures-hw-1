@@ -22,6 +22,10 @@ public:
     int m_points;
     Tree<int, Contestant*> m_contestantIds[NUM_OF_TREES];
     Tree<StrengthAndId, Contestant*> m_contestantPowers[NUM_OF_TREES];
+    // TODO: We must update this everytime we make an important change that
+    // affects the contestants. For example, in add_contestant_to_team,
+    // remove_contestant_from_team, update_contestant_strength, etc.
+    int m_cachedAusterity;
 
     Team(int id, Sport sport, Country* country);
     // Teams should not be copied

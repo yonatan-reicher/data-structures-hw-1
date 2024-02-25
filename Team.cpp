@@ -5,6 +5,7 @@ Team::Team(int id, Sport sport, Country* country) {
     m_sport = sport;
     m_country = country;
     m_strength = 0;
+    m_cachedAusterity = 0;
 }
 
 bool Team::canBeDeleted() const {

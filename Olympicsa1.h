@@ -29,6 +29,8 @@ private:
     Tree<int, Country> m_countries;
     Tree<int, Team> m_teams;
     Tree<int, Contestant> m_contestants;
+
+    void updateTeamAusterity(int teamId);
 	
 public:
 	// <DO-NOT-MODIFY> {
