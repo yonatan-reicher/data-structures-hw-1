@@ -345,7 +345,7 @@ int treeToArray(const std::unique_ptr<Node<K, T>>& root, T* array) {
 }
 
 template <class K, class T, class F>
-std::unique_ptr<Node<K, T>> fromArray(T* array, int size, F& keyGenerator) {
+std::unique_ptr<Node<K, T>> treeFromArray(T* array, int size, F& keyGenerator) {
     if (size == 0) {
         return nullptr;
     }
@@ -356,8 +356,8 @@ std::unique_ptr<Node<K, T>> fromArray(T* array, int size, F& keyGenerator) {
         std::unique_ptr<Node<K, T>> root = std::unique_ptr<Node<K, T>>(
             new Node<K, T>(keyGenerator(array[leftSize]), array[leftSize])
         );
-        root->setLeft(fromArray(array, leftSize));
-        root->setRight(fromArray(array + leftSize + 1, rightSize));
+        root->setLeft(treeFromArray(array, leftSize));
+        root->setRight(treeFromArray(array + leftSize + 1, rightSize));
         return root;
     }
 
@@ -367,8 +367,8 @@ std::unique_ptr<Node<K, T>> fromArray(T* array, int size, F& keyGenerator) {
         std::unique_ptr<Node<K, T>> root = std::unique_ptr<Node<K, T>>(
             new Node<K, T>(keyGenerator(array[leftSize]), array[leftSize])
         );
-        root->setLeft(fromArray(array, leftSize));
-        root->setRight(fromArray(array + leftSize + 1, rightSize));
+        root->setLeft(treeFromArray(array, leftSize));
+        root->setRight(treeFromArray(array + leftSize + 1, rightSize));
         return root;
     }
 }
@@ -389,6 +389,10 @@ public:
         m_minimum = &root;
         m_maximum = &root;
     }
+    Tree(const Tree&) = delete;
+    Tree& operator=(const Tree&) = delete;
+    Tree(Tree&&) = default;
+    Tree& operator=(Tree&&) = default;
 
     T& insert(const K& key, T data) {
         bool wasAlreadyInserted = false;
@@ -457,8 +461,9 @@ public:
     }
 
     // Input array must be deleted by the caller using delete[].
-    static Tree fromArray(T* array, int size) {
-        return treeFromArray(array, size);
+    template <class F>
+    static Tree fromArray(T* array, int size, F& keyGenerator) {
+        return treeFromArray<K, T, F>(array, size, keyGenerator);
     }
 
     friend auto operator<<(std::ostream& os, const Tree& tree) -> std::ostream& { 
