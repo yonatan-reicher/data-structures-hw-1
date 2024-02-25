@@ -20,7 +20,7 @@ public:
     Country* m_country;
     int m_strength;
     int m_points;
-    Tree<StrengthAndId, Contestant*> m_contestantIds[NUM_OF_TREES];
+    Tree<int, Contestant*> m_contestantIds[NUM_OF_TREES];
     Tree<StrengthAndId, Contestant*> m_contestantPowers[NUM_OF_TREES];
 
     Team(int id, Sport sport, Country* country);
