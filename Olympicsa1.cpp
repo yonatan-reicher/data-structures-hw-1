@@ -123,6 +123,8 @@ StatusType Olympics::add_contestant(int contestantId ,int countryId,Sport sport,
                 return StatusType::FAILURE;
             }
         }
+        // TODO: This is never deleted --v
+        // Maybe don't use a pointer?
         contestant = new Contestant(contestantId, sport, country, strength);
 
         m_contestants.insert(contestantId, *contestant);
