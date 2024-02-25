@@ -23,6 +23,9 @@ public:
     Contestant(int id, Sport sport, Country* country, int strength);
     Contestant(const Contestant& other) = delete;
     Contestant(Contestant&& other) = delete;
+
+    bool removeTeam(Team* team);
+    bool addTeam(Team* team);
 };
 
 #endif
