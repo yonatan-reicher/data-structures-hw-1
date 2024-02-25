@@ -33,11 +33,12 @@ public:
     K key;
     T data;
 
-    Node(K key, T data) {
-        this->key = std::move(key);
-        this->data = std::move(data);
-        m_left = nullptr;
-        m_right = nullptr;
+    Node(K key, T data)
+        : m_left(nullptr), m_right(nullptr)
+        , m_height(0)
+        , key(std::move(key))
+        , data(std::move(data))
+    {
         updateHeight();
     }
 
