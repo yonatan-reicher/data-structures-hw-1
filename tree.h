@@ -76,13 +76,14 @@ T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key, K* keyOfSwitched) {
     // the line below demands default constructor so:
     // 1) we make it ptr?
     // 2) we enable default constructors in our classes
-    T result;
     if (root->key == key && root->getLeft() == nullptr) {
-        result = std::move(root->data);
+        T result = std::move(root->data);
         root = root->popRight();
+        return result;
     } else if (root->key == key && root->getRight() == nullptr) {
-        result = std::move(root->data);
+        T result = std::move(root->data);
         root = root->popLeft();
+        return result;
     } else if (root->key == key) {
         /*     5              5            5   4
          *    / \                             / \
@@ -94,7 +95,7 @@ T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key, K* keyOfSwitched) {
          */
         // Find the rightmost node in the left subtree. Swap the data.
         // This should be done *carefully* so no uniqueptr is cleaned up!
-        result = std::move(root->data);
+        T result = std::move(root->data);
         std::unique_ptr<Node<K, T>> left = root->popLeft();
         std::unique_ptr<Node<K, T>> right = root->popRight();
         std::unique_ptr<Node<K, T>> rightmost = popRightmost(left);
@@ -104,16 +105,18 @@ T btRemove(std::unique_ptr<Node<K, T>>& root, const K& key, K* keyOfSwitched) {
         if (keyOfSwitched != nullptr) {
             *keyOfSwitched = root->key;
         }
+        return result;
     } else if (key < root->key) {
         std::unique_ptr<Node<K, T>> left = root->popLeft();
-        result = btRemove(left, key, keyOfSwitched);
+        T result = btRemove(left, key, keyOfSwitched);
         root->setLeft(std::move(left));
+        return result;
     } else {
         std::unique_ptr<Node<K, T>> right = root->popRight();
-        result = btRemove(right, key, keyOfSwitched);
+        T result = btRemove(right, key, keyOfSwitched);
         root->setRight(std::move(right));
+        return result;
     }
-    return std::move(result);
 }
 
 template <class K, class T>
