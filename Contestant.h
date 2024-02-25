@@ -8,14 +8,14 @@
 // Needed because of circular dependency
 class Team;
 
-#define NUM_OF_TEAMS 3
+#define MAX_NUM_OF_TEAMS 3
 
 class Contestant {
 public:
     int m_id;
     Sport m_sport;
     Country* m_country;
-    Team* m_teams[NUM_OF_TEAMS];
+    Team* m_teams[MAX_NUM_OF_TEAMS];
     int m_numOfTeams;
     int m_helperIndex;
     int m_strength;

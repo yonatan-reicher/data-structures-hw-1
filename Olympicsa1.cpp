@@ -66,7 +66,7 @@ void Olympics::updateTeamAusterity(int teamId) {
     team.m_cachedAusterity = austerity;
 }
 
-	
+
 StatusType Olympics::add_country(int countryId, int medals) {
     try {
         if (countryId <= 0 || medals < 0) {
@@ -85,7 +85,7 @@ StatusType Olympics::add_country(int countryId, int medals) {
         return StatusType::ALLOCATION_ERROR;
     }
 }
-	
+
 StatusType Olympics::remove_country(int countryId){
     try {
         if (countryId <= 0) {
@@ -160,7 +160,7 @@ StatusType Olympics::remove_team(int teamId){
         return StatusType::ALLOCATION_ERROR;
     }
 }
-	
+
 StatusType Olympics::add_contestant(int contestantId ,int countryId,Sport sport,int strength){
     try {
         if (contestantId <= 0 || countryId <= 0 || strength < 0)
@@ -181,46 +181,69 @@ StatusType Olympics::add_contestant(int contestantId ,int countryId,Sport sport,
                 return StatusType::FAILURE;
             }
         }
-        // TODO: This is never deleted --v
-        // Maybe don't use a pointer?
         contestant = new Contestant(contestantId, sport, country, strength);
 
         m_contestants.insert(contestantId, *contestant);
         country->m_numOfContestants++;
+        delete contestant;
         return StatusType::SUCCESS;
     }
     catch (std::bad_alloc&){
         return StatusType::ALLOCATION_ERROR;
     }
 }
-	
+
 StatusType Olympics::remove_contestant(int contestantId){
 	if(contestantId <= 0)
     {
         return StatusType::INVALID_INPUT;
     }
 
+    Contestant* contestant;
     try {
-        Contestant contestant = m_contestants.get(contestantId);
-        if(contestant.canBeDeleted())
-        {
-            m_contestants.remove(contestantId);
-            contestant.m_country->m_numOfContestants--;
-            return StatusType::SUCCESS;
-        }
-        else
-        {
-            return StatusType::FAILURE;
-        }
+        contestant = &m_contestants.get(contestantId);
     }
     catch (NotFoundException<int>&){
         return StatusType::FAILURE;
     }
+    if(contestant->canBeDeleted())
+    {
+        m_contestants.remove(contestantId);
+        contestant->m_country->m_numOfContestants--;
+        return StatusType::SUCCESS;
+    }
+    else
+    {
+        return StatusType::FAILURE;
+    }
     // no alloc errors can occur, right?
 }
-	
+
 StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){
-	return StatusType::FAILURE;
+	if(contestantId <= 0 || teamId <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
+    Contestant* contestant;
+    Team* team;
+    try {
+        contestant = &m_contestants.get(contestantId);
+        team = &m_teams.get(teamId);
+    }
+    catch (NotFoundException<int>&){
+        return StatusType::FAILURE;
+    }
+    if(contestant->m_numOfTeams == MAX_NUM_OF_TEAMS
+        || contestant->m_sport != team->m_sport
+        || contestant->m_country != team->m_country)
+    {
+        return StatusType::FAILURE;
+    }
+
+    contestant->addTeam(team);
+    add_contestant_to_team_tree(team, contestant);
+
+    return StatusType::FAILURE;
 }
 
 StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
@@ -280,7 +303,7 @@ void combineSortedByIdAndChangeTeam(
 
     while (i < size1 || j < size2) {
         // 3.a + 3.b + 3.c
-        Contestant* c = 
+        Contestant* c =
             i == size1 ? arr2[j++] :
             j == size2 ? arr1[i++] :
             arr1[i]->m_id < arr2[j]->m_id ? arr1[i++] : arr2[j++];
@@ -443,7 +466,7 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
 
     // Step 8. 
     // TODO: Update the strength of Team 1
-    
+
     // Step 9.
     // TODO: Delete Team 2 (Use the method so the team's country also updates
     // it's counter).
@@ -457,5 +480,72 @@ StatusType Olympics::play_match(int teamId1,int teamId2){
 
 output_t<int> Olympics::austerity_measures(int teamId){
 	return 0;
+}
+
+void Olympics::add_contestant_to_team_tree(Team *team, Contestant *contestant) {
+    int destTree;
+    if(contestant->m_id < team->m_contestantIds[0].maximumKey()){
+        team->m_contestantIds[0].insert(contestant->m_id, contestant);
+        destTree = 0;
+    }
+    else if(contestant->m_id < team->m_contestantIds[1].maximumKey()){
+        team->m_contestantIds[1].insert(contestant->m_id, contestant);
+        destTree = 1;
+    }
+    else {
+        team->m_contestantIds[2].insert(contestant->m_id, contestant);
+        destTree = 2;
+    }
+
+    destTree = balanceTrees(destTree, team->m_contestantIds, contestant->m_id);
+    team->m_contestantPowers[destTree].insert(StrengthAndId(*contestant), contestant);
+}
+
+int Olympics::balanceTrees(int destTree, Tree<int, Contestant *> *contestantIds, int newContestantId) {
+    int newDestTree = destTree;
+    Contestant* contestantToMove;
+    if (0 == destTree) {
+        if(contestantIds[0].size() - contestantIds[1].size() == 2) {
+            contestantToMove = contestantIds[0].remove(contestantIds[0].maximumKey());
+            contestantIds[1].insert(contestantToMove->m_id, contestantToMove);
+
+            if(contestantIds[1].size() - contestantIds[2].size() == 2){
+                contestantToMove = contestantIds[1].remove(contestantIds[1].maximumKey());
+                contestantIds[2].insert(contestantToMove->m_id, contestantToMove);
+            }
+        }
+    }
+    else if(1 == destTree){
+        if (contestantIds[1].size() - contestantIds[0].size() == 2){
+            contestantToMove = contestantIds[1].remove(contestantIds[1].minimumKey());
+            contestantIds[0].insert(contestantToMove->m_id, contestantToMove);
+            // The new inserted contestant can be the minimal in the tree (though can't be the maximal)
+            if (contestantToMove->m_id == newContestantId) {
+                newDestTree = 0;
+            }
+        }
+        else if (contestantIds[1].size() - contestantIds[2].size() == 2){
+            contestantToMove = contestantIds[1].remove(contestantIds[1].maximumKey());
+            contestantIds[2].insert(contestantToMove->m_id, contestantToMove);
+        }
+    }
+    else {
+        if (contestantIds[2].size() - contestantIds[1].size() == 2){
+            contestantToMove = contestantIds[2].remove(contestantIds[2].minimumKey());
+            contestantIds[1].insert(contestantToMove->m_id, contestantToMove);
+            if (contestantToMove->m_id == newContestantId) {
+                newDestTree = 1;
+            }
+
+            if(contestantIds[1].size() - contestantIds[0].size() == 2){
+                contestantToMove = contestantIds[1].remove(contestantIds[1].minimumKey());
+                contestantIds[0].insert(contestantToMove->m_id, contestantToMove);
+                if (contestantToMove->m_id == newContestantId) {
+                    newDestTree = 0;
+                }}
+        }
+    }
+
+    return newDestTree;
 }
 

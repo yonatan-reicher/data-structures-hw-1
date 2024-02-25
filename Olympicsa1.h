@@ -70,6 +70,8 @@ public:
 	output_t<int> austerity_measures(int teamId);
 	
 	// } </DO-NOT-MODIFY>
+    void add_contestant_to_team_tree(Team *team, Contestant *contestant);
+    int balanceTrees(int destTree, Tree<int, Contestant *> contestantIds[3], int newContestantId);
 };
 
 #endif // STREAMINGDBA1_H_

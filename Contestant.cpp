@@ -21,7 +21,7 @@ bool Contestant::removeTeam(Team* team) {
 }
 
 bool Contestant::addTeam(Team* team) {
-    if (m_numOfTeams == NUM_OF_TEAMS) {
+    if (m_numOfTeams == MAX_NUM_OF_TEAMS) {
         return false;
     }
     m_teams[m_numOfTeams] = team;
