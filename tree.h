@@ -331,16 +331,16 @@ const std::unique_ptr<Node<K, T>>& getMinimum(const std::unique_ptr<Node<K, T>>&
 
 // Returns the number of elements written
 template <class K, class T>
-int toArray(const std::unique_ptr<Node<K, T>>& root, T* array) {
+int treeToArray(const std::unique_ptr<Node<K, T>>& root, T* array) {
     if (root == nullptr) {
         return 0;
     }
 
     int written = 0;
-    written += toArray(root->getLeft(), array);
+    written += treeToArray(root->getLeft(), array);
     array[written] = root->data;
     written++;
-    written += toArray(root->getRight(), array + written);
+    written += treeToArray(root->getRight(), array + written);
     return written;
 }
 
@@ -451,7 +451,7 @@ public:
     // Return value must be deleted by the caller using delete[].
     T* toArray() const {
         T* array = new T[m_size];
-        int written = toArray(root, array);
+        int written = treeToArray(root, array);
         assert(written == m_size);
         return array;
     }
