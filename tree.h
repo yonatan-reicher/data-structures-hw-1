@@ -353,22 +353,24 @@ std::unique_ptr<Node<K, T>> treeFromArray(T* array, int size, F& keyGenerator) {
     if (size % 2 == 1) {
         int leftSize = size / 2;
         int rightSize = size / 2;
+        K key = keyGenerator(array[leftSize]);
         std::unique_ptr<Node<K, T>> root = std::unique_ptr<Node<K, T>>(
-            new Node<K, T>(keyGenerator(array[leftSize]), array[leftSize])
+            new Node<K, T>(std::move(key), array[leftSize])
         );
-        root->setLeft(treeFromArray(array, leftSize));
-        root->setRight(treeFromArray(array + leftSize + 1, rightSize));
+        root->setLeft(treeFromArray<K, T, F>(array, leftSize, keyGenerator));
+        root->setRight(treeFromArray<K, T, F>(array + leftSize + 1, rightSize, keyGenerator));
         return root;
     }
-
-    if (size % 2 == 0) {
+    else {
+        assert(size % 2 == 0);
         int leftSize = size / 2 - 1;
         int rightSize = size / 2;
+        K key = keyGenerator(array[leftSize]);
         std::unique_ptr<Node<K, T>> root = std::unique_ptr<Node<K, T>>(
-            new Node<K, T>(keyGenerator(array[leftSize]), array[leftSize])
+            new Node<K, T>(std::move(key), array[leftSize])
         );
-        root->setLeft(treeFromArray(array, leftSize));
-        root->setRight(treeFromArray(array + leftSize + 1, rightSize));
+        root->setLeft(treeFromArray<K, T, F>(array, leftSize, keyGenerator));
+        root->setRight(treeFromArray<K, T, F>(array + leftSize + 1, rightSize, keyGenerator));
         return root;
     }
 }
@@ -389,6 +391,7 @@ public:
         m_minimum = &root;
         m_maximum = &root;
     }
+    template <class F>
     Tree(const Tree&) = delete;
     Tree& operator=(const Tree&) = delete;
     Tree(Tree&&) = default;
@@ -461,9 +464,15 @@ public:
     }
 
     // Input array must be deleted by the caller using delete[].
+    // TODO: Maybe this should just be a constructor...
     template <class F>
     static Tree fromArray(T* array, int size, F& keyGenerator) {
-        return treeFromArray<K, T, F>(array, size, keyGenerator);
+        Tree ret;
+        ret.root = treeFromArray<K, T, F>(array, size, keyGenerator);
+        ret.m_size = size;
+        ret.m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(ret.root));
+        ret.m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(ret.root));
+        return ret;
     }
 
     friend auto operator<<(std::ostream& os, const Tree& tree) -> std::ostream& { 
