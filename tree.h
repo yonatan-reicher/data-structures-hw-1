@@ -445,19 +445,27 @@ public:
         return m_size;
     }
 
+    const T* minimum() const {
+        return (*m_minimum)->data;
+    }
+
     T* minimum() {
         return (*m_minimum)->data;
     }
 
-    const K& minimumKey() {
+    const K& minimumKey() const {
         return (*m_minimum)->key;
+    }
+
+    const T* maximum() const {
+        return (*m_maximum)->data;
     }
 
     T* maximum() {
         return (*m_maximum)->data;
     }
 
-    const K& maximumKey() {
+    const K& maximumKey() const {
         return (*m_maximum)->key;
     }
 
