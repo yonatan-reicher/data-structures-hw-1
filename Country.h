@@ -9,8 +9,6 @@ public:
     int m_numOfContestants;
 
     Country(int id, int numOfMedals);
-    Country(const Country& other) = delete;
-    Country(Country&& other) = delete;
 
     bool canBeDeleted() const;
 };

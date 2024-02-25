@@ -24,8 +24,9 @@ public:
     Tree<StrengthAndId, Contestant*> m_contestantPowers[NUM_OF_TREES];
 
     Team(int id, Sport sport, Country* country);
+    // Teams should not be copied
     Team(const Team& other) = delete;
-    Team(Team&& other) = delete;
+    Team(Team&& other) = default;
 
     bool canBeDeleted() const;
 
