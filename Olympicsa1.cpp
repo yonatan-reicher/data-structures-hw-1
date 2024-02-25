@@ -2,27 +2,105 @@
 #include <memory>
 
 Olympics::Olympics(){
-
+    // Everything is initialized to be empty.
 }
 
 Olympics::~Olympics(){
-
+    // All fields are managed by the data structures.
 }
 	
-StatusType Olympics::add_country(int countryId, int medals){
-	return StatusType::FAILURE;
+StatusType Olympics::add_country(int countryId, int medals) {
+    try {
+        if (countryId <= 0 || medals < 0) {
+            return StatusType::INVALID_INPUT;
+        }
+
+        if (m_countries.contains(countryId)) {
+            return StatusType::FAILURE;
+        }
+
+        m_countries.insert(countryId, Country(countryId, medals));
+
+        return StatusType::SUCCESS;
+    }
+    catch (std::bad_alloc&) {
+        return StatusType::ALLOCATION_ERROR;
+    }
 }
 	
 StatusType Olympics::remove_country(int countryId){
-	return StatusType::FAILURE;
+    try {
+        if (countryId <= 0) {
+            return StatusType::INVALID_INPUT;
+        }
+
+        if (!m_countries.contains(countryId)) {
+            return StatusType::FAILURE;
+        }
+
+        const Country& country = m_countries.get(countryId);
+
+        if (!country.canBeDeleted()) {
+            return StatusType::FAILURE;
+        }
+
+        m_countries.remove(countryId);
+
+        return StatusType::SUCCESS;
+    } catch (std::bad_alloc&) {
+        return StatusType::ALLOCATION_ERROR;
+    }
 }
 
 StatusType Olympics::add_team(int teamId,int countryId,Sport sport){
-	return StatusType::FAILURE;
+    try {
+        if (teamId <= 0 || countryId <= 0) {
+            return StatusType::INVALID_INPUT;
+        }
+
+        if (!m_countries.contains(countryId)) {
+            return StatusType::FAILURE;
+        }
+
+        if (m_teams.contains(teamId)) {
+            return StatusType::FAILURE;
+        }
+
+        Country* country = &m_countries.get(countryId);
+        m_teams.insert(teamId, std::move(Team(teamId, sport, country)));
+        // This happens after insertion in case of exception.
+        country->m_numOfTeams++;
+
+        return StatusType::SUCCESS;
+    } catch (std::bad_alloc&) {
+        return StatusType::ALLOCATION_ERROR;
+    }
 }
 
 StatusType Olympics::remove_team(int teamId){
-	return StatusType::FAILURE;
+    try {
+        if (teamId <= 0) {
+            return StatusType::INVALID_INPUT;
+        }
+
+        if (!m_teams.contains(teamId)) {
+            return StatusType::FAILURE;
+        }
+
+        Team& team = m_teams.get(teamId);
+        Country* country = team.m_country;
+
+        if (!team.canBeDeleted()) {
+            return StatusType::FAILURE;
+        }
+
+        m_teams.remove(teamId);
+        country->m_numOfTeams--;
+
+        return StatusType::SUCCESS;
+    } catch (std::bad_alloc&) {
+        return StatusType::ALLOCATION_ERROR;
+    }
 }
 	
 StatusType Olympics::add_contestant(int contestantId ,int countryId,Sport sport,int strength){
@@ -144,6 +222,7 @@ StrengthAndId getStrengthAndId(const Contestant* c) {
 }
 
 StatusType Olympics::unite_teams(int teamId1,int teamId2){
+    // TODO: Check for allocation failures.
     if (teamId1 == teamId2 || teamId1 <= 0 || teamId2 <= 0) {
         return StatusType::INVALID_INPUT;
     }
@@ -262,3 +341,4 @@ StatusType Olympics::play_match(int teamId1,int teamId2){
 output_t<int> Olympics::austerity_measures(int teamId){
 	return 0;
 }
+
