@@ -232,11 +232,19 @@ StatusType Olympics::update_contestant_strength(int contestantId ,int change){
 }
 
 output_t<int> Olympics::get_strength(int contestantId){
-
+    return 0;
 }
 
 output_t<int> Olympics::get_medals(int countryId){
-	return 0;
+    if (countryId <= 0) {
+        return StatusType::INVALID_INPUT;
+    }
+
+    if (!m_countries.contains(countryId)) {
+        return StatusType::FAILURE;
+    }
+
+    return m_countries.get(countryId).m_numOfMedals;
 }
 
 output_t<int> Olympics::get_team_strength(int teamId){
@@ -258,6 +266,7 @@ std::unique_ptr<Contestant*[]> getIdArrayOfTeam(const Team& team) {
     return ret;
 }
 
+// TODO: Think about: does this work if someone is already in the array? Tree::fromArray maybe doesn't support duplicates!
 void combineSortedByIdAndChangeTeam(
     Contestant* arr1[], int size1, Contestant* arr2[], int size2,
     Contestant* ret[],
