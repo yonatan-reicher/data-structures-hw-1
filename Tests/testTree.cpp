@@ -9,7 +9,7 @@ std::vector<int> randomData = std::vector<int>{ 23, 1, 1, 2, 23, 5, 6, 7, 3 };
 
 int countDistinct(std::vector<int> data) {
     std::set<int> distinct;
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         distinct.insert(data[i]);
     }
     return distinct.size();
@@ -19,17 +19,15 @@ void testData(const std::vector<int>& data) {
     int distinct = countDistinct(data);
     Tree<int, int> tree;
 
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         tree.insert(data[i], data[i]);
     }
     assert(tree.size() == distinct);
 
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         assert(tree.get(data[i]) == data[i]);
     }
-    for (int i = 0; i < data.size(); i++) {
-        std::cout << "Removing " << data[i] << std::endl;
-        std::cout << tree << std::endl;
+    for (size_t i = 0; i < data.size(); i++) {
         if (tree.contains(data[i])) {
             assert(tree.remove(data[i]) == data[i]);
         }
