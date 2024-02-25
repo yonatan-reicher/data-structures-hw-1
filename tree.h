@@ -449,7 +449,7 @@ public:
     }
 
     // Return value must be deleted by the caller using delete[].
-    T* toArray() {
+    T* toArray() const {
         T* array = new T[m_size];
         int written = toArray(root, array);
         assert(written == m_size);
