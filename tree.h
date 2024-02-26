@@ -388,17 +388,17 @@ private:
 
     std::unique_ptr<Node> root;
     int m_size;
-    std::unique_ptr<Node>* m_minimum;
-    std::unique_ptr<Node>* m_maximum;
+    Node* m_minimum;
+    Node* m_maximum;
 
     void updateMinAndMax() {
-        m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(root));
-        m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(root));
-        assert(m_minimum != nullptr);
-        assert(m_maximum != nullptr);
-        assert(m_size == 0 ? *m_minimum == nullptr : *m_minimum != nullptr);
-        assert(m_size == 0 ? *m_maximum == nullptr : *m_maximum != nullptr);
-        assert(m_size == 0 || !((*m_minimum)->key > (*m_maximum)->key));
+        std::unique_ptr<Node>& min = const_cast<std::unique_ptr<Node>&>(getMinimum(root));
+        std::unique_ptr<Node>& max = const_cast<std::unique_ptr<Node>&>(getMaximum(root));
+        m_minimum = min == nullptr ? nullptr : min.get();
+        m_maximum = max == nullptr ? nullptr : max.get();
+        assert(m_size == 0 ? m_minimum == nullptr : m_minimum != nullptr);
+        assert(m_size == 0 ? m_maximum == nullptr : m_maximum != nullptr);
+        assert(m_size == 0 || !(m_minimum->key > m_maximum->key));
     }
 public:
     Tree() {
@@ -453,27 +453,27 @@ public:
     }
 
     const T* minimum() const {
-        return (*m_minimum)->data;
+        return m_minimum->data;
     }
 
     T* minimum() {
-        return (*m_minimum)->data;
+        return m_minimum->data;
     }
 
     const K& minimumKey() const {
-        return (*m_minimum)->key;
+        return m_minimum->key;
     }
 
     const T* maximum() const {
-        return (*m_maximum)->data;
+        return m_maximum->data;
     }
 
     T* maximum() {
-        return (*m_maximum)->data;
+        return m_maximum->data;
     }
 
     const K& maximumKey() const {
-        return (*m_maximum)->key;
+        return m_maximum->key;
     }
 
     // Return value must be deleted by the caller using delete[].
