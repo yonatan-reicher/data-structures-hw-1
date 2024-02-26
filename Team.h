@@ -19,6 +19,7 @@ public:
     int m_id;
     Sport m_sport;
     Country* m_country;
+    // TODO: Remove this field!
     int m_strength;
     int m_points;
     Tree<int, Contestant*> m_contestantIds[NUM_OF_TREES];
