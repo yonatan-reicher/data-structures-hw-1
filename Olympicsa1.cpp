@@ -1,5 +1,6 @@
 #include "Olympicsa1.h"
 #include <memory>
+#include <sstream>
 
 Olympics::Olympics(){
     // Everything is initialized to be empty.
@@ -290,8 +291,9 @@ StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
         }
     }
 
-    balanceTeamTrees((contestantIdTreeIndex + 1) % 3, team);
-    balanceTeamTrees((contestantIdTreeIndex + 2) % 3, team);
+    team->m_contestantIds[contestantIdTreeIndex].remove(contestantId);
+
+    balanceTeamTrees(contestantIdTreeIndex, team);
     updateTeamAusterity(teamId);
 
     return StatusType::SUCCESS;
@@ -649,52 +651,12 @@ void Olympics::add_contestant_to_team_tree(Team *team, Contestant *contestant) {
 
 }
 
-void Olympics::balanceTeamTrees(int enlargedTreeIndex, Team *team) {
-    if (0 == enlargedTreeIndex) {
-        if(team->m_contestantIds[0].size() - team->m_contestantIds[1].size() == 2) {
-            moveContestantBetweenTeamTrees(team, 0, 1);
+void Olympics::balanceTeamTrees(int changedTreeIndex, Team *team) {
+    balanceTwoTrees(team, changedTreeIndex, (changedTreeIndex + 1) % 3);
+    balanceTwoTrees(team, changedTreeIndex, (changedTreeIndex + 2) % 3);
 
-            if(team->m_contestantIds[1].size() - team->m_contestantIds[2].size() == 2){
-                moveContestantBetweenTeamTrees(team, 1, 2);
-            }
-        }
-        if (team->m_contestantIds[0].size() - team->m_contestantIds[2].size() == 2)
-        {
-            moveContestantBetweenTeamTrees(team, 0, 2);
-
-            if(team->m_contestantIds[2].size() - team->m_contestantIds[1].size() == 2)
-            {
-                moveContestantBetweenTeamTrees(team, 2, 1);
-            }
-        }
-    }
-    else if(1 == enlargedTreeIndex){
-        if (team->m_contestantIds[1].size() - team->m_contestantIds[0].size() == 2){
-            moveContestantBetweenTeamTrees(team, 1, 0);
-        }
-        else if (team->m_contestantIds[1].size() - team->m_contestantIds[2].size() == 2){
-            moveContestantBetweenTeamTrees(team, 1, 2);
-        }
-    }
-    else {
-        if (team->m_contestantIds[2].size() - team->m_contestantIds[1].size() == 2)
-        {
-            moveContestantBetweenTeamTrees(team, 2, 1);
-
-            if(team->m_contestantIds[1].size() - team->m_contestantIds[0].size() == 2)
-            {
-                moveContestantBetweenTeamTrees(team, 1, 0);
-            }
-        }
-        if (team->m_contestantIds[2].size() - team->m_contestantIds[0].size() == 2)
-        {
-            moveContestantBetweenTeamTrees(team, 2, 0);
-
-            if(team->m_contestantIds[0].size() - team->m_contestantIds[1].size() == 2)
-            {
-                moveContestantBetweenTeamTrees(team, 0, 1);
-            }
-        }
+    if(0 == team->m_contestantIds[changedTreeIndex].size()) {
+        sortRoots(changedTreeIndex, team);
     }
 }
 
@@ -716,8 +678,6 @@ void Olympics::moveContestantBetweenTeamTrees(Team *team, int srcTree, int destT
     team->m_contestantPowers[destTree].insert(getStrengthAndId(contestantToMove), contestantToMove);
 }
 
-#include <sstream>
-
 std::string Olympics::prettyPrint() const {
     std::stringstream ss;
     ss << "Countries:" << std::endl;
@@ -727,6 +687,46 @@ std::string Olympics::prettyPrint() const {
     ss << "Contestants:" << std::endl;
     ss << m_contestants << std::endl;
     return ss.str();
+}
+
+void Olympics::balanceTwoTrees(Team *team, int firstTreeId, int secondTreeId) {
+    if(firstTreeId > secondTreeId){
+        std::swap(firstTreeId, secondTreeId);
+    }
+
+    if(team->m_contestantIds[firstTreeId].size() - team->m_contestantIds[secondTreeId].size() == 2) {
+        if(secondTreeId - firstTreeId == 2){
+            for(int i = firstTreeId; i < secondTreeId; i++)
+            {
+                moveContestantBetweenTeamTrees(team, i, i + 1);
+            }
+        }
+        else
+        {
+            moveContestantBetweenTeamTrees(team, firstTreeId, secondTreeId);
+        }
+    }
+    else if(team->m_contestantIds[firstTreeId].size() - team->m_contestantIds[secondTreeId].size() == -2) {
+        if(secondTreeId - firstTreeId == 2){
+            for(int i = secondTreeId; i > firstTreeId; i--)
+            {
+                moveContestantBetweenTeamTrees(team, i, i - 1);
+            }
+        }
+        else
+        {
+            moveContestantBetweenTeamTrees(team, secondTreeId, firstTreeId);
+        }
+    }
+}
+
+void Olympics::sortRoots(int emptiedTreeIndex, Team *team) {
+    for(int i = emptiedTreeIndex + 1; i < NUM_OF_TREES; i++)
+    {
+        if(team->m_contestantIds[i].size() != 0) {
+            moveContestantBetweenTeamTrees(team, i, i - 1);
+        }
+    }
 }
 
 
@@ -750,4 +750,9 @@ std::string Olympics::prettyPrint() const {
 	| unite_teams                   |    /    |   Need to handle contestants that are in both teams   |
 	| play_match                    |    /    |                                |
 	| austerity_measures            |    X    |                                |
+
+TODO:
+1. Whatsapp tests
+2. Run tests with valgrind on the server
+3. Make sure duplicates are handled correctly in unite_team
 */
