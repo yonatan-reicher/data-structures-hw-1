@@ -21,6 +21,9 @@
 #include "Contestant.h"
 #include "tree.h"
 
+#define BACKWARD_MOVE (-1)
+#define FOREWORD_MOVE 1
+
 class Olympics {
 private:
 	//
@@ -71,7 +74,8 @@ public:
 	
 	// } </DO-NOT-MODIFY>
     void add_contestant_to_team_tree(Team *team, Contestant *contestant);
-    int balanceTrees(int destTree, Tree<int, Contestant *> contestantIds[3], int newContestantId);
+    void balanceTeamTrees(int enlargedTreeIndex, Team *team);
+    void moveContestantBetweenTeamTrees(Team *team, int srcTree, int destTree);
 };
 
 #endif // STREAMINGDBA1_H_

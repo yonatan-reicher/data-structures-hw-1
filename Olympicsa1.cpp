@@ -251,7 +251,36 @@ StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){
 }
 
 StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
-	return StatusType::FAILURE;
+	if(contestantId <= 0 || teamId <= 0) {
+        return StatusType::FAILURE;
+    }
+
+    Contestant* contestant;
+    Team* team;
+    try {
+        contestant = &m_contestants.get(contestantId);
+        team = &m_teams.get(teamId);
+    }
+    catch (NotFoundException<int>&){
+        return StatusType::FAILURE;
+    }
+
+    if (!contestant->removeTeam(team)){
+        return StatusType::FAILURE;
+    }
+
+    int contestantIdTreeIndex;
+    for(int i = 0; i < NUM_OF_TREES; i++)
+    {
+        if(team->m_contestantIds[i].contains(contestantId)){
+            contestantIdTreeIndex = i;
+        }
+    }
+
+    balanceTeamTrees((contestantIdTreeIndex + 1) % 3, team);
+    balanceTeamTrees((contestantIdTreeIndex + 2) % 3, team);
+
+    return StatusType::FAILURE;
 }
 
 StatusType Olympics::update_contestant_strength(int contestantId ,int change){
@@ -487,70 +516,68 @@ output_t<int> Olympics::austerity_measures(int teamId){
 }
 
 void Olympics::add_contestant_to_team_tree(Team *team, Contestant *contestant) {
-    int destTree;
     if(contestant->m_id < team->m_contestantIds[0].maximumKey()){
         team->m_contestantIds[0].insert(contestant->m_id, contestant);
-        destTree = 0;
+        team->m_contestantPowers[0].insert(getStrengthAndId(contestant), contestant);
+        balanceTeamTrees(0, team);
     }
     else if(contestant->m_id < team->m_contestantIds[1].maximumKey()){
         team->m_contestantIds[1].insert(contestant->m_id, contestant);
-        destTree = 1;
+        team->m_contestantPowers[1].insert(getStrengthAndId(contestant), contestant);
+        balanceTeamTrees(1, team);
     }
     else {
         team->m_contestantIds[2].insert(contestant->m_id, contestant);
-        destTree = 2;
+        team->m_contestantPowers[2].insert(getStrengthAndId(contestant), contestant);
+        balanceTeamTrees(2, team);
     }
 
-    destTree = balanceTrees(destTree, team->m_contestantIds, contestant->m_id);
-    team->m_contestantPowers[destTree].insert(StrengthAndId(*contestant), contestant);
 }
 
-int Olympics::balanceTrees(int destTree, Tree<int, Contestant *> *contestantIds, int newContestantId) {
-    int newDestTree = destTree;
-    Contestant* contestantToMove;
-    if (0 == destTree) {
-        if(contestantIds[0].size() - contestantIds[1].size() == 2) {
-            contestantToMove = contestantIds[0].remove(contestantIds[0].maximumKey());
-            contestantIds[1].insert(contestantToMove->m_id, contestantToMove);
+void Olympics::balanceTeamTrees(int enlargedTreeIndex, Team *team) {
+    if (0 == enlargedTreeIndex) {
+        if(team->m_contestantIds[0].size() - team->m_contestantIds[1].size() == 2) {
+            moveContestantBetweenTeamTrees(team, 0, 1);
 
-            if(contestantIds[1].size() - contestantIds[2].size() == 2){
-                contestantToMove = contestantIds[1].remove(contestantIds[1].maximumKey());
-                contestantIds[2].insert(contestantToMove->m_id, contestantToMove);
+            if(team->m_contestantIds[1].size() - team->m_contestantIds[2].size() == 2){
+                moveContestantBetweenTeamTrees(team, 1, 2);
             }
         }
     }
-    else if(1 == destTree){
-        if (contestantIds[1].size() - contestantIds[0].size() == 2){
-            contestantToMove = contestantIds[1].remove(contestantIds[1].minimumKey());
-            contestantIds[0].insert(contestantToMove->m_id, contestantToMove);
-            // The new inserted contestant can be the minimal in the tree (though can't be the maximal)
-            if (contestantToMove->m_id == newContestantId) {
-                newDestTree = 0;
-            }
+    else if(1 == enlargedTreeIndex){
+        if (team->m_contestantIds[1].size() - team->m_contestantIds[0].size() == 2){
+            moveContestantBetweenTeamTrees(team, 1, 0);
         }
-        else if (contestantIds[1].size() - contestantIds[2].size() == 2){
-            contestantToMove = contestantIds[1].remove(contestantIds[1].maximumKey());
-            contestantIds[2].insert(contestantToMove->m_id, contestantToMove);
+        else if (team->m_contestantIds[1].size() - team->m_contestantIds[2].size() == 2){
+            moveContestantBetweenTeamTrees(team, 1, 2);
         }
     }
     else {
-        if (contestantIds[2].size() - contestantIds[1].size() == 2){
-            contestantToMove = contestantIds[2].remove(contestantIds[2].minimumKey());
-            contestantIds[1].insert(contestantToMove->m_id, contestantToMove);
-            if (contestantToMove->m_id == newContestantId) {
-                newDestTree = 1;
-            }
+        if (team->m_contestantIds[2].size() - team->m_contestantIds[1].size() == 2)
+        {
+            moveContestantBetweenTeamTrees(team, 2, 1);
 
-            if(contestantIds[1].size() - contestantIds[0].size() == 2){
-                contestantToMove = contestantIds[1].remove(contestantIds[1].minimumKey());
-                contestantIds[0].insert(contestantToMove->m_id, contestantToMove);
-                if (contestantToMove->m_id == newContestantId) {
-                    newDestTree = 0;
-                }}
+            if(team->m_contestantIds[1].size() - team->m_contestantIds[0].size() == 2)
+            {
+                moveContestantBetweenTeamTrees(team, 1, 0);
+            }
         }
     }
+}
 
-    return newDestTree;
+void Olympics::moveContestantBetweenTeamTrees(Team *team, int srcTree, int destTree) {
+    if(srcTree == destTree){
+        return;
+    }
+
+    Contestant* contestantToMove =
+            srcTree < destTree
+            ? team->m_contestantIds[srcTree].remove(team->m_contestantIds[srcTree].maximumKey())
+            : team->m_contestantIds[srcTree].remove(team->m_contestantIds[srcTree].minimumKey());
+    team->m_contestantIds[destTree].insert(contestantToMove->m_id, contestantToMove);
+
+    team->m_contestantPowers[srcTree].remove(getStrengthAndId(contestantToMove));
+    team->m_contestantPowers[destTree].insert(getStrengthAndId(contestantToMove), contestantToMove);
 }
 
 
