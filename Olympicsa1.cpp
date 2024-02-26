@@ -258,6 +258,7 @@ StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){
 
     contestant->addTeam(team);
     add_contestant_to_team_tree(team, contestant);
+    updateTeamAusterity(teamId);
 
     return StatusType::SUCCESS;
 }
@@ -291,16 +292,63 @@ StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
 
     balanceTeamTrees((contestantIdTreeIndex + 1) % 3, team);
     balanceTeamTrees((contestantIdTreeIndex + 2) % 3, team);
+    updateTeamAusterity(teamId);
 
     return StatusType::SUCCESS;
 }
 
-StatusType Olympics::update_contestant_strength(int contestantId ,int change){
-	return StatusType::FAILURE;
+StatusType Olympics::update_contestant_strength(int contestantId, int change){
+    // TODO: Make sure to call this function just after returning!
+    try {
+        if (contestantId <= 0) {
+            return StatusType::INVALID_INPUT;
+        }
+
+        if (!m_contestants.contains(contestantId)) {
+            return StatusType::FAILURE;
+        }
+
+        Contestant& contestant = m_contestants.get(contestantId);
+        if (contestant.m_strength + change < 0) {
+            return StatusType::FAILURE;
+        }
+
+        // Save the contestant's team ids before taking them out.
+        int teamIds[MAX_NUM_OF_TEAMS];
+        int numOfTeams = contestant.m_numOfTeams;
+        for (int i = 0; i < numOfTeams; i++) {
+            teamIds[i] = contestant.m_teams[i]->m_id;
+        }
+
+        // Take the contestant out of all teams.
+        for (int i = 0; i < numOfTeams; i++) {
+            remove_contestant_from_team(teamIds[i], contestantId);
+        }
+
+        contestant.m_strength += change;
+
+        // Add the contestant back to all teams.
+        for (int i = 0; i < numOfTeams; i++) {
+            add_contestant_to_team(teamIds[i], contestantId);
+            updateTeamAusterity(teamIds[i]);
+        }
+
+        return StatusType::SUCCESS;
+    } catch (std::bad_alloc&) {
+        return StatusType::ALLOCATION_ERROR;
+    }
 }
 
 output_t<int> Olympics::get_strength(int contestantId){
-    return 0;
+    if (contestantId <= 0) {
+        return StatusType::INVALID_INPUT;
+    }
+
+    if (!m_contestants.contains(contestantId)) {
+        return StatusType::FAILURE;
+    }
+
+    return m_contestants.get(contestantId).m_strength;
 }
 
 output_t<int> Olympics::get_medals(int countryId){
@@ -524,18 +572,45 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     team1->m_contestantPowers[2] = std::move(strength3);
 
     // Step 8. 
-    // TODO: Update the strength of Team 1
+    updateTeamAusterity(teamId1);
 
     // Step 9.
-    // TODO: Delete Team 2 (Use the method so the team's country also updates
-    // it's counter).
     remove_team(teamId2);
 
 	return StatusType::SUCCESS;
 }
 
+int getTeamPoints(const Team& team) {
+    return calculateTeamStrength(team) + team.m_country->m_numOfMedals;
+}
+
 StatusType Olympics::play_match(int teamId1,int teamId2){
-	return StatusType::FAILURE;
+    if (teamId1 == teamId2 || teamId1 <= 0 || teamId2 <= 0) {
+        return StatusType::INVALID_INPUT;
+    }
+
+    if (!m_teams.contains(teamId1) || !m_teams.contains(teamId2)) {
+        return StatusType::FAILURE;
+    }
+
+    Team& team1 = m_teams.get(teamId1);
+    Team& team2 = m_teams.get(teamId2);
+
+    if (team1.m_sport != team2.m_sport) {
+        return StatusType::FAILURE;
+    }
+
+    int pointsTeam1 = getTeamPoints(team1);
+    int pointsTeam2 = getTeamPoints(team2);
+
+    if (pointsTeam1 == pointsTeam2) {
+        return StatusType::FAILURE;
+    }
+
+    Country& winner = pointsTeam1 > pointsTeam2 ? *team1.m_country : *team2.m_country;
+    winner.m_numOfMedals++;
+
+    return StatusType::SUCCESS;
 }
 
 output_t<int> Olympics::austerity_measures(int teamId){
@@ -657,22 +732,22 @@ std::string Olympics::prettyPrint() const {
 
 /*
     X - done   / - half done    .  started
-     __________________________________________________________
-    |            Method             |  status |      notes     |
-    |-------------------------------|---------|----------------|
-	| add_country                   |    X    |                |
-	| remove_country                |    X    |                |
-	| add_team                      |    X    |                |
-	| remove_team                   |    X    |                |
-	| add_contestant                |    X    |                |
-	| remove_contestant             |    X    |                |
-	| add_contestant_to_team        |    /    |                |
-	| remove_contestant_from_team   |         |                |
-	| update_contestant_strength    |         |                |
-	| get_strength                  |         |                |
-	| get_medals                    |    X    |                |
-	| get_team_strength             |    X    |                |
-	| unite_teams                   |    /    |                |
-	| play_match                    |         |                |
-	| austerity_measures            |    .    |                |
+     __________________________________________________________________________                
+    |            Method             |  status |             notes              |
+    |-------------------------------|---------|--------------------------------|
+	| add_country                   |    X    |                                |
+	| remove_country                |    X    |                                |
+	| add_team                      |    X    |                                |
+	| remove_team                   |    X    |                                |
+	| add_contestant                |    X    |                                |
+	| remove_contestant             |    X    |                                |
+	| add_contestant_to_team        |    X    |                                |
+	| remove_contestant_from_team   |    /    |                                |
+	| update_contestant_strength    |    X    |                                |
+	| get_strength                  |    X    |                                |
+	| get_medals                    |    X    |                                |
+	| get_team_strength             |    X    |                                |
+	| unite_teams                   |    /    |   Need to handle contestants that are in both teams   |
+	| play_match                    |    /    |                                |
+	| austerity_measures            |    X    |                                |
 */
