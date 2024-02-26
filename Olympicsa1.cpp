@@ -271,6 +271,20 @@ output_t<int> Olympics::get_medals(int countryId){
 }
 
 output_t<int> Olympics::get_team_strength(int teamId){
+    try {
+        if (teamId <= 0) {
+            return StatusType::INVALID_INPUT;
+        }
+
+        if (!m_teams.contains(teamId)) {
+            return StatusType::FAILURE;
+        }
+
+        return calculateTeamStrength(m_teams.get(teamId));
+    }
+    catch (std::bad_alloc&) {
+        return StatusType::ALLOCATION_ERROR;
+    }
 	return 0;
 }
 
@@ -559,14 +573,14 @@ int Olympics::balanceTrees(int destTree, Tree<int, Contestant *> *contestantIds,
 	| remove_country                |    X    |                |
 	| add_team                      |    X    |                |
 	| remove_team                   |    X    |                |
-	| add_contestant                |    /    |    ptr bug?    |
+	| add_contestant                |    X    |                |
 	| remove_contestant             |    X    |                |
-	| add_contestant_to_team        |         |                |
+	| add_contestant_to_team        |    /    |                |
 	| remove_contestant_from_team   |         |                |
 	| update_contestant_strength    |         |                |
 	| get_strength                  |         |                |
 	| get_medals                    |    X    |                |
-	| get_team_strength             |         |                |
+	| get_team_strength             |    X    |                |
 	| unite_teams                   |    /    |                |
 	| play_match                    |         |                |
 	| austerity_measures            |    .    |                |
