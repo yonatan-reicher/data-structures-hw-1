@@ -162,21 +162,24 @@ StatusType Olympics::remove_team(int teamId){
 }
 
 StatusType Olympics::add_contestant(int contestantId ,int countryId,Sport sport,int strength){
+    Contestant *contestant = nullptr;
     try {
+        Country *country = nullptr;
         if (contestantId <= 0 || countryId <= 0 || strength < 0)
         {
             return StatusType::INVALID_INPUT;
         }
-        Country *country = nullptr;
-        Contestant *contestant = nullptr;
         try
         {
             country = &m_countries.get(countryId);
             contestant = &m_contestants.get(contestantId);
+            if(contestant != nullptr){
+                return StatusType::FAILURE;
+            }
         }
         catch (NotFoundException<int>&)
         {
-            if (country == nullptr || contestant != nullptr)
+            if (country == nullptr)
             {
                 return StatusType::FAILURE;
             }
@@ -189,6 +192,7 @@ StatusType Olympics::add_contestant(int contestantId ,int countryId,Sport sport,
         return StatusType::SUCCESS;
     }
     catch (std::bad_alloc&){
+        delete contestant;
         return StatusType::ALLOCATION_ERROR;
     }
 }
