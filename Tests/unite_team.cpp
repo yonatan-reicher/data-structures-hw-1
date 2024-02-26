@@ -42,9 +42,10 @@ int main() {
     assert(olympics3.add_team(1, 1, Sport::SWIMMING) == StatusType::SUCCESS);
     assert(olympics3.add_team(2, 1, Sport::SWIMMING) == StatusType::SUCCESS);
     // 30 Random contestants with unique ids
-    int ids[30] = { 17, 31, 74, 95, 11, 13, 58, 27, 29, 77, 15, 35, 49, 70, 41, 1, 93, 69, 68, 78, 5, 65, 9, 62, 57, 54, 25 };
-    int strenghs[30] = { 33, 73, 48, 31, 57, 29, 88, 46, 75, 1, 61, 4, 23, 25, 77, 93, 82, 29, 56, 93, 74, 8, 76, 63, 47, 14, 87 };
-    for (int i = 0; i < 30; i++) {
+    constexpr int N = 27;
+    int ids[N] = { 17, 31, 74, 95, 11, 13, 58, 27, 29, 77, 15, 35, 49, 70, 41, 1, 93, 69, 68, 78, 5, 65, 9, 62, 57, 54, 25 };
+    int strenghs[N] = { 33, 73, 48, 31, 57, 29, 88, 46, 75, 1, 61, 4, 23, 25, 77, 93, 82, 29, 56, 93, 74, 8, 76, 63, 47, 14, 87 };
+    for (int i = 0; i < N; i++) {
         assert(olympics3.add_contestant(ids[i], 1, Sport::SWIMMING, strenghs[i]) == StatusType::SUCCESS);
         assert(olympics3.add_contestant_to_team(i % 3 == 0 ? 1 : 2, ids[i]) == StatusType::SUCCESS);
     }
@@ -55,19 +56,19 @@ int main() {
 
     ids2: [5, 9, 11, 13, 15, 25, 27, 29, 31, 35, 41, 54, 62, 69, 70, 74, 78, 93]
     strs2: [74, 76, 57, 29, 61, 87, 46, 75, 73, 4, 77, 14, 63, 29, 25, 48, 93, 82]
-    total strength: 76 + 87 + 75 + 77 + 63 + 93 = 471
+    total strength: 76 + 87 + 75 + 77 + 63 + 93 = 257
 
     [1, 5, 9, 11, 13, 15, 17, 25, 27, 29, 31, 35, 41, 49, 54, 57, 58, 62, 65, 68, 69, 70, 74, 77, 78, 93, 95]
     [93, 74, 76, 57, 29, 61, 33, 87, 46, 75, 73, 4, 77, 23, 14, 47, 88, 63, 8, 56, 29, 25, 48, 1, 93, 82, 31]
-    strs after unite: 678
+    strs after unite: 274
     */
     assert(olympics3.get_team_strength(1).status() == StatusType::SUCCESS);
     assert(olympics3.get_team_strength(1).ans() == 237);
     assert(olympics3.get_team_strength(2).status() == StatusType::SUCCESS);
-    assert(olympics3.get_team_strength(2).ans() == 471);
+    assert(olympics3.get_team_strength(2).ans() == 257);
     assert(olympics3.unite_teams(1, 2) == StatusType::SUCCESS);
     assert(olympics3.get_team_strength(1).status() == StatusType::SUCCESS);
-    assert(olympics3.get_team_strength(1).ans() == 678);
+    assert(olympics3.get_team_strength(1).ans() == 274);
 
     std::cout << "Passed" << std::endl;
 

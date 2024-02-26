@@ -440,7 +440,7 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     idsTeam1 = getIdArrayOfTeam(*team1);
     idsTeam2 = getIdArrayOfTeam(*team2);
     for (int i = 0; i < NUM_OF_TREES; i++) {
-        strengthTeam1[i] = std::unique_ptr<Contestant*[]>(team2->m_contestantPowers[i].toArray());
+        strengthTeam1[i] = std::unique_ptr<Contestant*[]>(team1->m_contestantPowers[i].toArray());
         strengthTeam2[i] = std::unique_ptr<Contestant*[]>(team2->m_contestantPowers[i].toArray());
     }
 
@@ -449,7 +449,7 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     std::unique_ptr<Contestant*[]> arrays[5];
     for (int i = 0; i < 5; i++) {
         arrays[i] = std::unique_ptr<Contestant*[]>(new Contestant*[n]);
-        for (int j = 0; j < team1->size(); j++) {
+        for (int j = 0; j < n; j++) {
             arrays[i][j] = nullptr;
         }
     }
@@ -534,12 +534,12 @@ output_t<int> Olympics::austerity_measures(int teamId){
 }
 
 void Olympics::add_contestant_to_team_tree(Team *team, Contestant *contestant) {
-    if(contestant->m_id < team->m_contestantIds[0].maximumKey()){
+    if(team->m_contestantIds[0].size() == 0 || contestant->m_id < team->m_contestantIds[0].maximumKey()){
         team->m_contestantIds[0].insert(contestant->m_id, contestant);
         team->m_contestantPowers[0].insert(getStrengthAndId(contestant), contestant);
         balanceTeamTrees(0, team);
     }
-    else if(contestant->m_id < team->m_contestantIds[1].maximumKey()){
+    else if(team->m_contestantIds[1].size() == 0 || contestant->m_id < team->m_contestantIds[1].maximumKey()){
         team->m_contestantIds[1].insert(contestant->m_id, contestant);
         team->m_contestantPowers[1].insert(getStrengthAndId(contestant), contestant);
         balanceTeamTrees(1, team);
