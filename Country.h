@@ -1,6 +1,8 @@
 #ifndef COUNTRY_H
 #define COUNTRY_H
 
+#include <iostream>
+
 class Country {
 public:
     int m_id;
@@ -12,5 +14,7 @@ public:
 
     bool canBeDeleted() const;
 };
+
+std::ostream& operator<<(std::ostream& os, const Country& country);
 
 #endif

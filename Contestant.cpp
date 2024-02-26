@@ -32,3 +32,14 @@ bool Contestant::addTeam(Team* team) {
 bool Contestant::canBeDeleted() const {
     return m_numOfTeams == 0;
 }
+
+std::ostream& operator<<(std::ostream& os, const Contestant& contestant) {
+    os << "Contestant of teams ";
+    for (int i = 0; i < contestant.m_numOfTeams; i++) {
+        os << contestant.m_teams[i]->m_id;
+        if (i != contestant.m_numOfTeams - 1) {
+            os << " ";
+        }
+    }
+    return os;
+}

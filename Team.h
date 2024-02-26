@@ -6,6 +6,7 @@
 #include "Contestant.h"
 #include "StrengthAndId.h"
 #include "tree.h"
+#include <iostream>
 
 // Needed because of circular dependency
 class Contestant;
@@ -38,5 +39,7 @@ public:
 
     int size() const;
 };
+
+std::ostream& operator<<(std::ostream& os, const Team& contestant);
 
 #endif

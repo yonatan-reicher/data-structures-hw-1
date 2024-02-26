@@ -594,6 +594,19 @@ void Olympics::moveContestantBetweenTeamTrees(Team *team, int srcTree, int destT
     team->m_contestantPowers[destTree].insert(getStrengthAndId(contestantToMove), contestantToMove);
 }
 
+#include <sstream>
+
+std::string Olympics::prettyPrint() const {
+    std::stringstream ss;
+    ss << "Countries:" << std::endl;
+    ss << m_countries << std::endl;
+    ss << "Teams:" << std::endl;
+    ss << m_teams << std::endl;
+    ss << "Contestants:" << std::endl;
+    ss << m_contestants << std::endl;
+    return ss.str();
+}
+
 
 /*
     X - done   / - half done    .  started

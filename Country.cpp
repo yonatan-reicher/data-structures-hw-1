@@ -10,3 +10,7 @@ Country::Country(int id, int numOfMedals) {
 bool Country::canBeDeleted() const {
     return m_numOfTeams == 0 && m_numOfContestants == 0;
 }
+
+std::ostream& operator<<(std::ostream& os, const Country& country) {
+    return os << "Country " << country.m_id;
+}

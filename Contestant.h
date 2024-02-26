@@ -4,6 +4,7 @@
 #include "wet1util.h"
 #include "Country.h"
 #include "Team.h"
+#include <iostream>
 
 // Needed because of circular dependency
 class Team;
@@ -25,6 +26,9 @@ public:
     bool removeTeam(Team* team);
     bool addTeam(Team* team);
     bool canBeDeleted() const;
+
 };
+
+std::ostream& operator<<(std::ostream& os, const Contestant& contestant);
 
 #endif

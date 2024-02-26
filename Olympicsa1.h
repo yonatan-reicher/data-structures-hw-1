@@ -76,6 +76,8 @@ public:
     void add_contestant_to_team_tree(Team *team, Contestant *contestant);
     void balanceTeamTrees(int enlargedTreeIndex, Team *team);
     void moveContestantBetweenTeamTrees(Team *team, int srcTree, int destTree);
+    // Debugging function so the debugger can show me easily the state of the trees
+    std::string prettyPrint() const;
 };
 
 #endif // STREAMINGDBA1_H_

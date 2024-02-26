@@ -19,3 +19,7 @@ int Team::size() const {
     }
     return size;
 }
+
+std::ostream& operator<<(std::ostream& os, const Team& team) {
+    return os << "Team with trees " << team.m_contestantIds[0] << " " << team.m_contestantIds[1] << " " << team.m_contestantIds[2];
+}
