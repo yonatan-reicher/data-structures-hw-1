@@ -30,5 +30,6 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const Contestant& contestant);
+std::ostream& operator<<(std::ostream& os, const Contestant* contestant);
 
 #endif

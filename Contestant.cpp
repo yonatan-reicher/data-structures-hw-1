@@ -12,7 +12,9 @@ Contestant::Contestant(int id, Sport sport, Country *country, int strength) {
 bool Contestant::removeTeam(Team* team) {
     for (int i = 0; i < m_numOfTeams; i++) {
         if (m_teams[i] == team) {
-            m_teams[i] = m_teams[m_numOfTeams - 1];
+            for (int j = i; j < m_numOfTeams - 1; j++) {
+                m_teams[j] = m_teams[j + 1];
+            }
             m_numOfTeams--;
             return true;
         }
@@ -24,6 +26,14 @@ bool Contestant::addTeam(Team* team) {
     if (m_numOfTeams == MAX_NUM_OF_TEAMS) {
         return false;
     }
+
+    // Don't add the team if it's already in the list
+    for (int i = 0; i < m_numOfTeams; i++) {
+        if (m_teams[i] == team) {
+            return true;
+        }
+    }
+
     m_teams[m_numOfTeams] = team;
     m_numOfTeams++;
     return true;
@@ -34,12 +44,13 @@ bool Contestant::canBeDeleted() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Contestant& contestant) {
-    os << "Contestant of teams ";
+    os << "Contestant with strength " << contestant.m_strength << " of teams";
     for (int i = 0; i < contestant.m_numOfTeams; i++) {
-        os << contestant.m_teams[i]->m_id;
-        if (i != contestant.m_numOfTeams - 1) {
-            os << " ";
-        }
+        os << " " << contestant.m_teams[i]->m_id;
     }
     return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Contestant* contestant) {
+    return os << *contestant;
 }
