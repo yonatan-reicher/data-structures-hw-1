@@ -16,6 +16,9 @@ int calculateTeamStrength(const Team& team) {
 
     int strength = 0;
     for (int i = 0; i < NUM_OF_TREES; i++) {
+        if (team.m_contestantIds[i].size() == 0) {
+            continue;
+        }
         strength += team.m_contestantPowers[i].maximumKey().m_strength;
     }
     return strength;
@@ -517,6 +520,7 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     // Step 9.
     // TODO: Delete Team 2 (Use the method so the team's country also updates
     // it's counter).
+    remove_team(teamId2);
 
 	return StatusType::SUCCESS;
 }
