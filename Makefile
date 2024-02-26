@@ -19,3 +19,8 @@ unit-test: $(SOURCES) $(TESTS)
 		g++ -std=c++11 -Wall -g $(SOURCES) $$file -o test; \
 		./test; \
 	done
+
+big-test:
+	g++ -std=c++11 -DNDEBUG -Wall *.cpp -o main
+	cat Tests/test1.in | ./main > test.txt
+	diff test.txt Tests/test1.out
