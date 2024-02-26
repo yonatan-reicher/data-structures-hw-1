@@ -24,35 +24,44 @@ int calculateTeamStrength(const Team& team) {
     return strength;
 }
 
-output_t<int> getStrongestContestantFromThird(int thirdIndex, const Team& team) {
+output_t<int> getMinOrMaxContestantFromThird(int thirdIndex, const Team& team, bool isMin) {
     if (team.m_contestantIds[thirdIndex].size() == 0) {
         return StatusType::FAILURE;
     }
-    return team.m_contestantPowers[thirdIndex].maximumKey().m_id;
+    if (isMin) {
+        return team.m_contestantPowers[thirdIndex].minimumKey().m_id;
+    } else {
+        return team.m_contestantPowers[thirdIndex].maximumKey().m_id;
+    }
 }
 
 // Must be O(log #teams + log #contestants)
 void Olympics::updateTeamAusterity(int teamId) {
     Team& team = m_teams.get(teamId);
 
+    if (team.size() < 6) {
+        team.m_cachedAusterity = 0;
+        return;
+    }
+
     int austerity = 0;
 
-    for (int i1 = 0; i1 < NUM_OF_TREES; i1++) {
-        output_t<int> id1 = getStrongestContestantFromThird(i1, team);
+    for (int i1 = 0; i1 < 2 * NUM_OF_TREES; i1++) {
+        output_t<int> id1 = getMinOrMaxContestantFromThird(i1 % 3, team, i1 < NUM_OF_TREES);
         if (id1.status() != StatusType::SUCCESS) {
             continue;
         }
 
         remove_contestant_from_team(teamId, id1.ans());
-        for (int i2 = i1; i2 < NUM_OF_TREES; i2++) {
-            output_t<int> id2 = getStrongestContestantFromThird(i2, team);
+        for (int i2 = 0; i2 < 2 * NUM_OF_TREES; i2++) {
+            output_t<int> id2 = getMinOrMaxContestantFromThird(i2 % 3, team, i2 < NUM_OF_TREES);
             if (id2.status() != StatusType::SUCCESS) {
                 continue;
             }
 
             remove_contestant_from_team(teamId, id2.ans());
-            for (int i3 = i2; i3 < NUM_OF_TREES; i3++) {
-                output_t<int> id3 = getStrongestContestantFromThird(i3, team);
+            for (int i3 = 0; i3 < 2 * NUM_OF_TREES; i3++) {
+                output_t<int> id3 = getMinOrMaxContestantFromThird(i3 % 3, team, i3 < NUM_OF_TREES);
                 if (id3.status() != StatusType::SUCCESS) {
                     continue;
                 }
@@ -530,7 +539,20 @@ StatusType Olympics::play_match(int teamId1,int teamId2){
 }
 
 output_t<int> Olympics::austerity_measures(int teamId){
-	return 0;
+    try {
+        if (teamId <= 0) {
+            return StatusType::INVALID_INPUT;
+        }
+
+        if (!m_teams.contains(teamId)) {
+            return StatusType::FAILURE;
+        }
+
+        return m_teams.get(teamId).m_cachedAusterity;
+    }
+    catch (std::bad_alloc&) {
+        return StatusType::ALLOCATION_ERROR;
+    }
 }
 
 void Olympics::add_contestant_to_team_tree(Team *team, Contestant *contestant) {
