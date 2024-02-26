@@ -74,10 +74,13 @@ public:
 	
 	// } </DO-NOT-MODIFY>
     void add_contestant_to_team_tree(Team *team, Contestant *contestant);
-    void balanceTeamTrees(int enlargedTreeIndex, Team *team);
+    void balanceTeamTrees(int changedTreeIndex, Team *team);
     void moveContestantBetweenTeamTrees(Team *team, int srcTree, int destTree);
     // Debugging function so the debugger can show me easily the state of the trees
     std::string prettyPrint() const;
+    void rearrangeTreesBySize(Team *team);
+    void balanceTwoTrees(Team *team, int firstTreeId, int secondTreeId);
+    void sortRoots(int emptiedTreeIndex, Team *team);
 };
 
 #endif // STREAMINGDBA1_H_
