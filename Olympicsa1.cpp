@@ -250,7 +250,7 @@ StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){
     contestant->addTeam(team);
     add_contestant_to_team_tree(team, contestant);
 
-    return StatusType::FAILURE;
+    return StatusType::SUCCESS;
 }
 
 StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
@@ -283,7 +283,7 @@ StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
     balanceTeamTrees((contestantIdTreeIndex + 1) % 3, team);
     balanceTeamTrees((contestantIdTreeIndex + 2) % 3, team);
 
-    return StatusType::FAILURE;
+    return StatusType::SUCCESS;
 }
 
 StatusType Olympics::update_contestant_strength(int contestantId ,int change){
@@ -561,6 +561,15 @@ void Olympics::balanceTeamTrees(int enlargedTreeIndex, Team *team) {
                 moveContestantBetweenTeamTrees(team, 1, 2);
             }
         }
+        if (team->m_contestantIds[0].size() - team->m_contestantIds[2].size() == 2)
+        {
+            moveContestantBetweenTeamTrees(team, 0, 2);
+
+            if(team->m_contestantIds[2].size() - team->m_contestantIds[1].size() == 2)
+            {
+                moveContestantBetweenTeamTrees(team, 2, 1);
+            }
+        }
     }
     else if(1 == enlargedTreeIndex){
         if (team->m_contestantIds[1].size() - team->m_contestantIds[0].size() == 2){
@@ -580,10 +589,22 @@ void Olympics::balanceTeamTrees(int enlargedTreeIndex, Team *team) {
                 moveContestantBetweenTeamTrees(team, 1, 0);
             }
         }
+        if (team->m_contestantIds[2].size() - team->m_contestantIds[0].size() == 2)
+        {
+            moveContestantBetweenTeamTrees(team, 2, 0);
+
+            if(team->m_contestantIds[0].size() - team->m_contestantIds[1].size() == 2)
+            {
+                moveContestantBetweenTeamTrees(team, 0, 1);
+            }
+        }
     }
 }
 
 void Olympics::moveContestantBetweenTeamTrees(Team *team, int srcTree, int destTree) {
+    assert(team->m_contestantIds[srcTree].size() > 0);
+    assert(team->m_contestantPowers[srcTree].size() > 0);
+
     if(srcTree == destTree){
         return;
     }
