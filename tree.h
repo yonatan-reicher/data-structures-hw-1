@@ -390,12 +390,21 @@ private:
     int m_size;
     std::unique_ptr<Node>* m_minimum;
     std::unique_ptr<Node>* m_maximum;
+
+    void updateMinAndMax() {
+        m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(root));
+        m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(root));
+        assert(m_minimum != nullptr);
+        assert(m_maximum != nullptr);
+        assert(m_size == 0 ? *m_minimum == nullptr : *m_minimum != nullptr);
+        assert(m_size == 0 ? *m_maximum == nullptr : *m_maximum != nullptr);
+        assert(m_size == 0 || !((*m_minimum)->key > (*m_maximum)->key));
+    }
 public:
     Tree() {
         root = nullptr;
         m_size = 0;
-        m_minimum = &root;
-        m_maximum = &root;
+        updateMinAndMax();
     }
     template <class F>
     Tree(const Tree&) = delete;
@@ -410,8 +419,7 @@ public:
             m_size++; // Must happen after the insert so we don't count failed calls.
         }
         // Update minimum and maximum. O(log n) time so it's fine.
-        m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(root));
-        m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(root));
+        updateMinAndMax();
         return dataReference;
     }
 
@@ -419,8 +427,7 @@ public:
         T data = avlRemove(root, key);
         m_size--; // Must happen after the remove so we don't count failed calls.
         // Update minimum and maximum. O(log n) time so it's fine.
-        m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(root));
-        m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(root));
+        updateMinAndMax();
         return data;
     }
 
@@ -484,8 +491,7 @@ public:
         Tree ret;
         ret.root = treeFromArray<K, T, F>(array, size, keyGenerator);
         ret.m_size = size;
-        ret.m_minimum = &const_cast<std::unique_ptr<Node>&>(getMinimum(ret.root));
-        ret.m_maximum = &const_cast<std::unique_ptr<Node>&>(getMaximum(ret.root));
+        ret.updateMinAndMax();
         return ret;
     }
 
