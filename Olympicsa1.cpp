@@ -267,7 +267,7 @@ StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){
 
 StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
 	if(contestantId <= 0 || teamId <= 0) {
-        return StatusType::FAILURE;
+        return StatusType::INVALID_INPUT;
     }
 
     Contestant* contestant;
