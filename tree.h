@@ -381,16 +381,16 @@ std::unique_ptr<Node<K, T>> treeFromArray(T* array, int size, F& keyGenerator) {
 template <class K, class T>
 class Tree {
 private:
-    using Node = Node<K, T>;
+    using TreeNode = Node<K, T>;
 
-    std::unique_ptr<Node> root;
+    std::unique_ptr<TreeNode> root;
     int m_size;
-    Node* m_minimum;
-    Node* m_maximum;
+    TreeNode* m_minimum;
+    TreeNode* m_maximum;
 
     void updateMinAndMax() {
-        std::unique_ptr<Node>& min = const_cast<std::unique_ptr<Node>&>(getMinimum(root));
-        std::unique_ptr<Node>& max = const_cast<std::unique_ptr<Node>&>(getMaximum(root));
+        std::unique_ptr<TreeNode>& min = const_cast<std::unique_ptr<TreeNode>&>(getMinimum(root));
+        std::unique_ptr<TreeNode>& max = const_cast<std::unique_ptr<TreeNode>&>(getMaximum(root));
         m_minimum = min == nullptr ? nullptr : min.get();
         m_maximum = max == nullptr ? nullptr : max.get();
         assert(m_size == 0 ? m_minimum == nullptr : m_minimum != nullptr);
@@ -482,6 +482,7 @@ public:
     }
 
     // Input array must be deleted by the caller using delete[].
+    // Input array MUST be sorted and have NO duplicates.
     // TODO: Maybe this should just be a constructor...
     template <class F>
     static Tree fromArray(T* array, int size, F& keyGenerator) {
