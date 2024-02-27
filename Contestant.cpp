@@ -30,7 +30,7 @@ bool Contestant::addTeam(Team* team) {
     // Don't add the team if it's already in the list
     for (int i = 0; i < m_numOfTeams; i++) {
         if (m_teams[i] == team) {
-            return true;
+            return false;
         }
     }
 

@@ -256,7 +256,9 @@ StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){
         return StatusType::FAILURE;
     }
 
-    contestant->addTeam(team);
+    if(!contestant->addTeam(team)) {
+        return StatusType::FAILURE;
+    }
     add_contestant_to_team_tree(team, contestant);
     updateTeamAusterity(teamId);
 
