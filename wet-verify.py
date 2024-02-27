@@ -7,7 +7,7 @@ import os
 # [0] system reserved :(
 # [1] path to zip file
 
-files_to_include = ["wet1util.h", "Olympicsa1.h","maina1.cpp"]
+files_to_include = ["wet1util.h", "maina1.cpp"]
 # all files in files_to_include MUST be in the same directory as the .py file
 
 okh = ["cstdio",
