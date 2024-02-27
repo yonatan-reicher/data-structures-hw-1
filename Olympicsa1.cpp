@@ -233,8 +233,7 @@ StatusType Olympics::remove_contestant(int contestantId){
     }
     if(contestant->canBeDeleted())
     {
-        m_contestants.remove(contestantId);
-        contestant->m_country->m_numOfContestants--;
+        m_contestants.remove(contestantId).m_country->m_numOfContestants--;
         return StatusType::SUCCESS;
     }
     else
@@ -265,7 +264,9 @@ StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){
         return StatusType::FAILURE;
     }
 
-    contestant->addTeam(team);
+    if(!contestant->addTeam(team)) {
+        return StatusType::FAILURE;
+    }
     add_contestant_to_team_tree(team, contestant);
     updateTeamAusterity(teamId);
 
@@ -274,7 +275,7 @@ StatusType Olympics::add_contestant_to_team(int teamId,int contestantId){
 
 StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
 	if(contestantId <= 0 || teamId <= 0) {
-        return StatusType::FAILURE;
+        return StatusType::INVALID_INPUT;
     }
 
     Contestant* contestant;
