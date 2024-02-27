@@ -409,7 +409,8 @@ std::unique_ptr<Contestant*[]> getIdArrayOfTeam(const Team& team) {
 }
 
 // TODO: Think about: does this work if someone is already in the array? Tree::fromArray maybe doesn't support duplicates!
-void combineSortedByIdAndChangeTeam(
+// Returns the amount of contestants written to ret. (because of duplicates)
+int combineSortedByIdAndChangeTeam(
     Contestant* arr1[], int size1, Contestant* arr2[], int size2,
     Contestant* ret[],
     Team* team1, Team* team2
@@ -426,13 +427,21 @@ void combineSortedByIdAndChangeTeam(
             i == size1 ? arr2[j++] :
             j == size2 ? arr1[i++] :
             arr1[i]->m_id < arr2[j]->m_id ? arr1[i++] : arr2[j++];
-        c->m_helperIndex = k;
         ret[k++] = c;
 
+        // If who we just wrote is the same as the previous one, remove it. We
+        // don't want duplicates in the array.
+        if (k >= 2 && ret[k - 2]->m_id == ret[k - 1]->m_id) {
+            k--;
+        }
+        
         // 3.d
+        c->m_helperIndex = k - 1;
         c->removeTeam(team2);
         c->addTeam(team1);
     }
+
+    return k;
 }
 
 template <int N>
@@ -467,6 +476,11 @@ void combineSortedByPower(
         if (indexOfMin != -1) {
             ret[iRet++] = firsts[indexOfMin];
             arrayIndices[indexOfMin]++;
+
+            // If who we just wrote is the same as the previous one, remove it.
+            if (iRet >= 2 && ret[iRet - 2]->m_id == ret[iRet - 1]->m_id) {
+                iRet--;
+            }
         }
         else done = true;
     } while (!done);
@@ -524,7 +538,7 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     }
 
     // Step 3.
-    combineSortedByIdAndChangeTeam(
+    int array0Size = combineSortedByIdAndChangeTeam(
         idsTeam1.get(), team1->size(),
         idsTeam2.get(), team2->size(),
         arrays[0].get(),
@@ -552,6 +566,8 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     int i1 = 0;
     int i2 = 0;
     int i3 = 0;
+    // Set n to be the amount of contestants with no duplicates.
+    n = array0Size;
     for (int i = 0; i < n; i++) {
         Contestant* c = arrays[1][i];
         if (c->m_helperIndex < n / 3) {
@@ -752,7 +768,7 @@ void Olympics::sortRoots(int emptiedTreeIndex, Team *team) {
 	| add_contestant                |    X    |                                |
 	| remove_contestant             |    X    |                                |
 	| add_contestant_to_team        |    X    |                                |
-	| remove_contestant_from_team   |    /    |                                |
+	| remove_contestant_from_team   |    X    |                                |
 	| update_contestant_strength    |    X    |                                |
 	| get_strength                  |    X    |                                |
 	| get_medals                    |    X    |                                |
