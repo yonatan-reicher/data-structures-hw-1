@@ -299,7 +299,8 @@ StatusType Olympics::remove_contestant_from_team(int teamId,int contestantId){
         }
     }
 
-    team->m_contestantIds[contestantIdTreeIndex].remove(contestantId);
+    Contestant* c = team->m_contestantIds[contestantIdTreeIndex].remove(contestantId);
+    team->m_contestantPowers[contestantIdTreeIndex].remove(*c);
 
     balanceTeamTrees(contestantIdTreeIndex, team);
     updateTeamAusterity(teamId);
