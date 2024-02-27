@@ -1,0 +1,192 @@
+add_country -5 0
+add_country 7 0
+add_country 1 0
+add_country 5 2
+add_country 5 0
+add_country 8 -1
+add_country 8 4
+add_country 9 4
+remove_country 8
+remove_country -5
+add_country 8 4
+add_team 10 5 2
+add_team 10 5 2
+add_team -4 5 4
+add_team 10 -1 4
+add_team 11 15 4
+add_team 11 5 4
+add_team 12 1 4
+add_team 14 1 4
+add_team 13 5 0
+remove_team 14
+remove_team 15
+remove_team 0
+add_contestant 20 5 4 -1
+add_contestant -1 5 4 100
+add_contestant 19 5 2 0
+add_contestant 20 -1 4 100
+add_contestant 20 5 4 100
+add_contestant 21 5 2 100
+add_contestant 22 5 2 100
+add_contestant 23 5 2 500
+add_contestant 24 5 2 200
+add_contestant 25 8 4 100
+remove_contestant 25
+add_contestant 25 8 4 100
+add_contestant 26 8 4 100
+remove_contestant 26
+remove_contestant -1
+remove_contestant 30
+add_contestant_to_team 10 19
+remove_contestant 19
+remove_team 10
+remove_contestant_from_team 10 19
+remove_contestant 19
+add_contestant_to_team 10 21
+add_contestant_to_team 10 22
+add_contestant_to_team 10 23
+austerity_measures 10
+austerity_measures 11
+austerity_measures 12
+austerity_measures 13
+austerity_measures 0
+austerity_measures 15
+get_team_strength 0
+get_team_strength 30
+get_team_strength 10
+get_team_strength 11
+get_team_strength 12
+get_team_strength 13
+remove_contestant_from_team 10 21
+get_team_strength 10
+add_contestant_to_team 10 21
+get_team_strength 10
+get_medals 0
+get_medals 50
+get_medals 7
+get_medals 1
+get_medals 5
+get_medals 8
+get_medals 9
+get_strength 20
+get_strength 21
+get_strength 22
+get_strength 23
+get_strength 24
+get_strength 25
+get_strength 19
+get_strength 0
+add_contestant 26 5 2 100
+add_contestant_to_team 10 26
+add_team 14 5 2
+add_team 15 5 2
+add_team 16 5 2
+add_contestant_to_team 14 21
+add_contestant_to_team 16 21
+add_contestant_to_team 15 21
+remove_contestant_from_team 16 21
+add_contestant_to_team 15 21
+get_team_strength 15
+get_team_strength 33
+austerity_measures 15
+add_contestant_to_team 16 23
+add_contestant_to_team 16 24
+add_contestant_to_team 16 26
+austerity_measures 16
+update_contestant_strength 0 1
+add_contestant_to_team 16 22
+austerity_measures 16
+austerity_measures 30
+add_contestant 27 5 2 900
+add_contestant 28 5 2 500
+add_contestant 29 5 2 800
+add_contestant 30 5 2 700
+add_contestant 31 5 2 400
+add_contestant_to_team 16 31
+add_contestant_to_team 16 30
+austerity_measures 16
+get_team_strength 16
+update_contestant_strength 30 -100
+austerity_measures 16
+get_team_strength 16
+update_contestant_strength 30 100
+austerity_measures 16
+get_team_strength 16
+update_contestant_strength 0 100
+update_contestant_strength 35 100
+update_contestant_strength 30 -800
+update_contestant_strength 21 200
+play_match 2 2
+play_match 2 0
+play_match 0 2
+play_match 12 33
+play_match 35 12
+play_match 13 12
+play_match 10 11
+get_team_strength 11
+get_team_strength 12
+get_medals 5
+get_medals 1
+play_match 12 11
+get_team_strength 11
+get_team_strength 12
+get_medals 5
+get_medals 1
+remove_contestant_from_team 10 26
+get_team_strength 10
+get_team_strength 14
+unite_teams 0 0
+get_medals 5
+get_medals 5
+play_match 10 14
+get_team_strength 10
+get_team_strength 14
+get_medals 5
+get_medals 5
+austerity_measures 10
+unite_teams 30 10
+unite_teams 10 30
+unite_teams 10 10
+unite_teams 10 -2
+unite_teams -3 10
+unite_teams 13 10
+unite_teams 13 12
+get_team_strength 10
+get_team_strength 14
+unite_teams 10 14
+get_team_strength 10
+get_team_strength 14
+remove_contestant 21
+unite_teams 10 14
+get_team_strength 10
+get_team_strength 16
+get_medals 5
+get_medals 5
+unite_teams 10 16
+get_team_strength 10
+get_team_strength 16
+get_medals 5
+get_medals 5
+austerity_measures 16
+austerity_measures 10
+add_contestant_to_team 10 29
+add_contestant_to_team 10 27
+get_team_strength 10
+austerity_measures 10
+remove_team 10
+remove_contestant 30
+remove_contestant_from_team 10 30
+remove_contestant 30
+austerity_measures 10
+remove_contestant 21
+remove_contestant_from_team 10 21
+remove_contestant 21
+remove_contestant_from_team 15 21
+remove_contestant_from_team 10 21
+remove_contestant 21
+austerity_measures 10
+get_team_strength 10
+remove_contestant_from_team 10 31
+austerity_measures 10
+get_team_strength 10
+remove_country 5
