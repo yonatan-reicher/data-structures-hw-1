@@ -225,8 +225,7 @@ StatusType Olympics::remove_contestant(int contestantId){
     }
     if(contestant->canBeDeleted())
     {
-        m_contestants.remove(contestantId);
-        contestant->m_country->m_numOfContestants--;
+        m_contestants.remove(contestantId).m_country->m_numOfContestants--;
         return StatusType::SUCCESS;
     }
     else
