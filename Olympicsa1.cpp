@@ -3,7 +3,7 @@
 #include <sstream>
 
 Olympics::Olympics(){
-    // Everything is initialized to be empty.
+    m_dontUpdateAusterity = false;
 }
 
 Olympics::~Olympics(){
@@ -38,10 +38,17 @@ output_t<int> getMinOrMaxContestantFromThird(int thirdIndex, const Team& team, b
 
 // Must be O(log #teams + log #contestants)
 void Olympics::updateTeamAusterity(int teamId) {
+    if (m_dontUpdateAusterity) {
+        return;
+    }
+
+    m_dontUpdateAusterity = true;
+
     Team& team = m_teams.get(teamId);
 
     if (team.size() < 6) {
         team.m_cachedAusterity = 0;
+        m_dontUpdateAusterity = false;
         return;
     }
 
@@ -77,6 +84,7 @@ void Olympics::updateTeamAusterity(int teamId) {
     }
 
     team.m_cachedAusterity = austerity;
+    m_dontUpdateAusterity = false;
 }
 
 
