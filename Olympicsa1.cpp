@@ -1,6 +1,7 @@
 #include "Olympicsa1.h"
 #include <memory>
 #include <sstream>
+#include <cmath>
 
 Olympics::Olympics(){
     m_dontUpdateAusterity = false;
@@ -568,11 +569,13 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     int i3 = 0;
     // Set n to be the amount of contestants with no duplicates.
     n = array0Size;
+    int third1 = (int)ceil(n / 3.0);
+    int third2 = (int)ceil((2 * n) / 3.0);
     for (int i = 0; i < n; i++) {
         Contestant* c = arrays[1][i];
-        if (c->m_helperIndex < n / 3) {
+        if (c->m_helperIndex < third1) {
             arrays[2][i1++] = c;
-        } else if (c->m_helperIndex < (2 * n) / 3) {
+        } else if (c->m_helperIndex < third2) {
             arrays[3][i2++] = c;
         } else {
             assert (c->m_helperIndex < n);
@@ -583,13 +586,13 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     // Step 6.
     Tree<int, Contestant*> ids1, ids2, ids3;
     Tree<StrengthAndId, Contestant*> strength1, strength2, strength3;
-    ids1 = Tree<int, Contestant*>::fromArray(arrays[0].get(), n / 3, getId);
-    ids2 = Tree<int, Contestant*>::fromArray(arrays[0].get() + n / 3, n / 3, getId);
-    ids3 = Tree<int, Contestant*>::fromArray(arrays[0].get() + (2 * n) / 3, n - (2 * n) / 3, getId);
+    ids1 = Tree<int, Contestant*>::fromArray(arrays[0].get(), third1, getId);
+    ids2 = Tree<int, Contestant*>::fromArray(arrays[0].get() + third1, third2 - third1, getId);
+    ids3 = Tree<int, Contestant*>::fromArray(arrays[0].get() + third2, n - third2, getId);
     // This is to make sure rounding errors dont cause us to miss elements  ---^^^
-    strength1 = Tree<StrengthAndId, Contestant*>::fromArray(arrays[2].get(), n / 3, getStrengthAndId);
-    strength2 = Tree<StrengthAndId, Contestant*>::fromArray(arrays[3].get(), n / 3, getStrengthAndId);
-    strength3 = Tree<StrengthAndId, Contestant*>::fromArray(arrays[4].get(), n - (2 * n) / 3, getStrengthAndId);
+    strength1 = Tree<StrengthAndId, Contestant*>::fromArray(arrays[2].get(), third1, getStrengthAndId);
+    strength2 = Tree<StrengthAndId, Contestant*>::fromArray(arrays[3].get(), third2 - third1, getStrengthAndId);
+    strength3 = Tree<StrengthAndId, Contestant*>::fromArray(arrays[4].get(), n - third2, getStrengthAndId);
 
     // Step 7.
     team1->m_contestantIds[0] = std::move(ids1);
