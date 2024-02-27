@@ -1,6 +1,5 @@
 #include "Olympicsa1.h"
 #include <memory>
-#include <sstream>
 #include <cmath>
 
 Olympics::Olympics(){
@@ -717,17 +716,6 @@ void Olympics::moveContestantBetweenTeamTrees(Team *team, int srcTree, int destT
 
     team->m_contestantPowers[srcTree].remove(getStrengthAndId(contestantToMove));
     team->m_contestantPowers[destTree].insert(getStrengthAndId(contestantToMove), contestantToMove);
-}
-
-std::string Olympics::prettyPrint() const {
-    std::stringstream ss;
-    ss << "Countries:" << std::endl;
-    ss << m_countries << std::endl;
-    ss << "Teams:" << std::endl;
-    ss << m_teams << std::endl;
-    ss << "Contestants:" << std::endl;
-    ss << m_contestants << std::endl;
-    return ss.str();
 }
 
 void Olympics::balanceTwoTrees(Team *team, int firstTreeId, int secondTreeId) {
