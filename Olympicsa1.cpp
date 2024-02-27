@@ -453,7 +453,7 @@ void combineSortedByPower(
     int iRet = 0;
     int arrayIndices[N] = { 0 };
 
-    bool done;
+    bool done = false;
     do {
         // Find firsts from the arrays.
         Contestant* firsts[N] = { 0 };
