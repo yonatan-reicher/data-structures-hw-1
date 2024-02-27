@@ -603,7 +603,14 @@ StatusType Olympics::unite_teams(int teamId1,int teamId2){
     updateTeamAusterity(teamId1);
 
     // Step 9.
-    remove_team(teamId2);
+    team2->m_contestantIds[0] = Tree<int, Contestant*>();
+    team2->m_contestantIds[1] = Tree<int, Contestant*>();
+    team2->m_contestantIds[2] = Tree<int, Contestant*>();
+    team2->m_contestantPowers[0] = Tree<StrengthAndId, Contestant*>();
+    team2->m_contestantPowers[1] = Tree<StrengthAndId, Contestant*>();
+    team2->m_contestantPowers[2] = Tree<StrengthAndId, Contestant*>();
+    StatusType ret = remove_team(teamId2);
+    assert(ret == StatusType::SUCCESS);
 
 	return StatusType::SUCCESS;
 }
@@ -651,7 +658,12 @@ output_t<int> Olympics::austerity_measures(int teamId){
             return StatusType::FAILURE;
         }
 
-        return m_teams.get(teamId).m_cachedAusterity;
+        Team& team = m_teams.get(teamId);
+        if (team.size() < 3) {
+            return StatusType::FAILURE;
+        }
+
+        return team.m_cachedAusterity;
     }
     catch (std::bad_alloc&) {
         return StatusType::ALLOCATION_ERROR;
